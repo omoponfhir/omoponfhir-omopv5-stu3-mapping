@@ -1,7 +1,6 @@
 package edu.gatech.chai.omoponfhir.omopv5.stu3.provider;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
@@ -15,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
@@ -24,7 +24,6 @@ import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.annotation.Operation;
 import ca.uhn.fhir.rest.annotation.OperationParam;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.mapping.OmopConceptMap;
 
@@ -99,17 +98,22 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 				int urlTranslateIndex = mappingRequestUrl.indexOf("$translate");
 				String remoteMappingTerminologyUrl = mappingTerminologyUrl+mappingRequestUrl.substring(urlTranslateIndex);
 
-				RestTemplate restTemplate = new RestTemplate();
-				ResponseEntity<String> response = restTemplate.getForEntity(remoteMappingTerminologyUrl, String.class);
-				if (response.getStatusCode().equals(HttpStatus.OK)) {
-					String result = response.getBody();
-					IParser fhirJsonParser = fhirContext.newJsonParser();
-					Parameters parameters = fhirJsonParser.parseResource(Parameters.class, result);
-					if (parameters != null && !parameters.isEmpty()) {
-						return parameters;
+				try {
+					RestTemplate restTemplate = new RestTemplate();
+					ResponseEntity<String> response = restTemplate.getForEntity(remoteMappingTerminologyUrl, String.class);
+					if (response.getStatusCode().equals(HttpStatus.OK)) {
+						String result = response.getBody();
+						IParser fhirJsonParser = fhirContext.newJsonParser();
+						Parameters parameters = fhirJsonParser.parseResource(Parameters.class, result);
+						if (parameters != null && !parameters.isEmpty()) {
+							return parameters;
+						}
 					}
+				} catch (RestClientException e) {
+					// We have an error.
+					logger.error("$translate: Error on connecting to Remote ConceptMap server at "+remoteMappingTerminologyUrl);
 					
-					// We got nothing. Just let it flow so we can use our internal one
+					// We may want not to return empty as we can try our internal server...
 				}
 			}
 		}
