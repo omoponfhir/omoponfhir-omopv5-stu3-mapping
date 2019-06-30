@@ -19,7 +19,7 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<hapi_stable_version>3.6.0</hapi_stable_version>
+		<hapi_stable_version>[3.8.0,)</hapi_stable_version>
 		<hapi_current_version>3.6.0-SNAPSHOT</hapi_current_version>
 		<omoponfhir_module_version>1.0.0</omoponfhir_module_version>
 		<spring_version>5.0.8.RELEASE</spring_version>
