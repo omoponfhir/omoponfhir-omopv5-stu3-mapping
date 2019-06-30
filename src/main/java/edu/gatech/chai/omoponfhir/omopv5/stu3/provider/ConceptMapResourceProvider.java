@@ -1,7 +1,9 @@
 package edu.gatech.chai.omoponfhir.omopv5.stu3.provider;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -12,6 +14,9 @@ import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.UriType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
@@ -67,6 +72,23 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 		this.fhirContext = fhirContext;
 	}
 	
+	HttpHeaders createHeaders(String username, String password) {
+		return new HttpHeaders() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				String auth = username + ":" + password;
+				byte[] encodedAuth = Base64.encodeBase64( 
+						auth.getBytes(Charset.forName("US-ASCII")) );
+				String authHeader = "Basic " + new String( encodedAuth );
+				set( "Authorization", authHeader );
+			}
+		};
+	}
+	
 	/**
 	 * $translate operation for concept translation.
 	 * 
@@ -99,8 +121,11 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 				String remoteMappingTerminologyUrl = mappingTerminologyUrl+mappingRequestUrl.substring(urlTranslateIndex);
 
 				try {
+					String username = System.getenv("MAPPING_TERMINOLOGY_USERNAME");
+					String password = System.getenv("MAPPING_TERMINOLOGY_PASSWORD");
 					RestTemplate restTemplate = new RestTemplate();
-					ResponseEntity<String> response = restTemplate.getForEntity(remoteMappingTerminologyUrl, String.class);
+					ResponseEntity<String> response = restTemplate.exchange(remoteMappingTerminologyUrl, HttpMethod.GET, new HttpEntity<HttpHeaders>(createHeaders(username, password)), String.class);
+//					ResponseEntity<String> response = restTemplate.getForEntity(remoteMappingTerminologyUrl, String.class);
 					if (response.getStatusCode().equals(HttpStatus.OK)) {
 						String result = response.getBody();
 						IParser fhirJsonParser = fhirContext.newJsonParser();
