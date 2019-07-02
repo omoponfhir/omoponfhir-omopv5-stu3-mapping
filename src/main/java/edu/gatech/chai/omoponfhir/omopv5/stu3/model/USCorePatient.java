@@ -18,6 +18,7 @@ package edu.gatech.chai.omoponfhir.omopv5.stu3.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Patient;
 
