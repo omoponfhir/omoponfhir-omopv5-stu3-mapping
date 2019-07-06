@@ -51,7 +51,6 @@ import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.model.MyOrganization;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.model.USCorePatient;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.model.USCorePatient.Ethnicity;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.model.USCorePatient.Race;
@@ -141,7 +140,7 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 					Reference managingOrganization = patient.getManagingOrganization();
 					IIdType managingOrganizationId = managingOrganization.getReferenceElement();
 					Long manageOrgFhirId = managingOrganizationId.getIdPartAsLong();
-					MyOrganization organization = OmopOrganization.getInstance().constructFHIR(manageOrgFhirId,
+					Organization organization = OmopOrganization.getInstance().constructFHIR(manageOrgFhirId,
 							entity.getCareSite());
 					patient.getManagingOrganization().setResource(organization);
 				}
@@ -719,7 +718,7 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 				paramWrapper.setValues(Arrays.asList(searchString + "%"));
 			} else if (identifierSystem == null || identifierSystem.isEmpty()) {
 				paramWrapper.setOperators(Arrays.asList("like"));
-				paramWrapper.setValues(Arrays.asList("%"+searchString));				
+				paramWrapper.setValues(Arrays.asList("%" + searchString));
 			} else {
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(searchString));
@@ -905,9 +904,9 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 		}
 
 		if (fperson == null) {
-			fperson = new FPerson();			
+			fperson = new FPerson();
 		}
-		
+
 		if (personSourceValue != null) {
 			fperson.setPersonSourceValue(personSourceValue);
 			if (personSourceValue.startsWith("SS^")) {

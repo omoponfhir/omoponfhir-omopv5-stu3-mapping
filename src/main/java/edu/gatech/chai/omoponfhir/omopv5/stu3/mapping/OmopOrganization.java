@@ -19,11 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Organization;
@@ -37,7 +34,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.model.MyOrganization;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.OrganizationResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.AddressUtil;
 import edu.gatech.chai.omopv5.dba.service.CareSiteService;
@@ -72,8 +68,8 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 	}
 	
 	@Override
-	public MyOrganization constructFHIR(Long fhirId, CareSite careSite) {
-		MyOrganization organization = new MyOrganization();
+	public Organization constructFHIR(Long fhirId, CareSite careSite) {
+		Organization organization = new Organization();
 
 		organization.setId(new IdType(fhirId));
 
@@ -99,16 +95,6 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 					.setState(careSite.getLocation().getState());
 			// .setPeriod(period);
 		}
-
-		// TODO: Static Extensions for sample. Remove this later.
-		// Populate the first, primitive extension
-		organization.setBillingCode(new CodeType("00102-1"));
-
-		// The second extension is repeatable and takes a block type
-		MyOrganization.EmergencyContact contact = new MyOrganization.EmergencyContact();
-		contact.setActive(new BooleanType(true));
-		contact.setContact(new ContactPoint());
-		organization.getEmergencyContact().add(contact);
 
 		return organization;
 	}
@@ -166,7 +152,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 
 	@Override
 	public Organization constructResource(Long fhirId, CareSite entity, List<String> includes) {
-		MyOrganization myOrganization = constructFHIR(fhirId, entity);
+		Organization myOrganization = constructFHIR(fhirId, entity);
 		
 		if (!includes.isEmpty()) {
 			if (includes.contains("Organization:partof")) {
@@ -176,7 +162,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 					Long partOfOrgFhirId = partOfOrgId.getIdPartAsLong();
 					Long omopId = IdMapping.getOMOPfromFHIR(partOfOrgFhirId, OrganizationResourceProvider.getType());
 					CareSite partOfCareSite = getMyOmopService().findById(omopId);
-					MyOrganization partOfOrgResource = constructFHIR(partOfOrgFhirId, partOfCareSite);
+					Organization partOfOrgResource = constructFHIR(partOfOrgFhirId, partOfCareSite);
 					
 					partOfOrganization.setResource(partOfOrgResource);
 				}
@@ -193,7 +179,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
         else paramWrapper.setUpperRelationship("and");
 
 		switch (parameter) {
-		case MyOrganization.SP_RES_ID:
+		case Organization.SP_RES_ID:
 			String orgnizationId = ((TokenParam) value).getValue();
 			paramWrapper.setParameterType("Long");
 			paramWrapper.setParameters(Arrays.asList("id"));
@@ -202,7 +188,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
-		case MyOrganization.SP_NAME:
+		case Organization.SP_NAME:
 			// This is family name, which is string. use like.
 			String familyString = ((StringParam) value).getValue();
 			paramWrapper.setParameterType("String");
@@ -220,9 +206,8 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 	}
 
 	@Override
-	public CareSite constructOmop(Long omopId, Organization fhirResource) {
+	public CareSite constructOmop(Long omopId, Organization myOrganization) {
 		String careSiteSourceValue = null;
-		MyOrganization myOrganization = (MyOrganization) fhirResource;
 		Location location = null;
 		
 		CareSite careSite = null;

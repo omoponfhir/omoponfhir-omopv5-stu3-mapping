@@ -18,13 +18,10 @@ package edu.gatech.chai.omoponfhir.omopv5.stu3.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hl7.fhir.dstu3.model.CodeType;
+import org.hl7.fhir.dstu3.model.BackboneElement;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Patient;
 
-import ca.uhn.fhir.model.api.BaseIdentifiableElement;
-import ca.uhn.fhir.model.api.IElement;
-import ca.uhn.fhir.model.api.IExtension;
 import ca.uhn.fhir.model.api.annotation.Block;
 import ca.uhn.fhir.model.api.annotation.Child;
 import ca.uhn.fhir.model.api.annotation.Description;
@@ -85,7 +82,7 @@ public class USCorePatient extends Patient {
 	 * extensions. It is referenced by the field myRace above.
 	 */
 	@Block
-	public static class Race extends BaseIdentifiableElement implements IExtension {
+	public static class Race extends BackboneElement {
 		/**
 		 * 
 		 */
@@ -118,14 +115,22 @@ public class USCorePatient extends Patient {
 		 * a utility method from ElementUtil is called and all fields are passed in.
 		 *****************************/
 
-		@Override
-		public <T extends IElement> List<T> getAllPopulatedChildElementsOfType(Class<T> theType) {
-			return ElementUtil.allPopulatedChildElements(theType, myCategory);
-		}
+//		@Override
+//		public <T extends IElement> List<T> getAllPopulatedChildElementsOfType(Class<T> theType) {
+//			return ElementUtil.allPopulatedChildElements(theType, myCategory);
+//		}
 
 		@Override
 		public boolean isEmpty() {
 			return ElementUtil.isEmpty(myCategory);
+		}
+
+		@Override
+		public Race copy() {
+			Race copy = new Race();
+			copy.myCategory = this.myCategory;
+			
+			return copy;
 		}
 
 	}
@@ -135,7 +140,7 @@ public class USCorePatient extends Patient {
 	 * extensions. It is referenced by the field myRace above.
 	 */
 	@Block
-	public static class Ethnicity extends BaseIdentifiableElement implements IExtension {
+	public static class Ethnicity extends BackboneElement {
 		/**
 		 * 
 		 */
@@ -168,14 +173,22 @@ public class USCorePatient extends Patient {
 		 * a utility method from ElementUtil is called and all fields are passed in.
 		 *****************************/
 
-		@Override
-		public <T extends IElement> List<T> getAllPopulatedChildElementsOfType(Class<T> theType) {
-			return ElementUtil.allPopulatedChildElements(theType, myCategory);
-		}
+//		@Override
+//		public <T extends IElement> List<T> getAllPopulatedChildElementsOfType(Class<T> theType) {
+//			return ElementUtil.allPopulatedChildElements(theType, myCategory);
+//		}
 
 		@Override
 		public boolean isEmpty() {
 			return ElementUtil.isEmpty(myCategory);
+		}
+
+		@Override
+		public Ethnicity copy() {
+			Ethnicity copy = new Ethnicity();
+			copy.myCategory = this.myCategory;
+			
+			return copy;
 		}
 
 	}

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Organization;
 //import org.hl7.fhir.dstu3.model.ContactPoint.ContactPointUse;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -30,10 +31,6 @@ import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
-//import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
-//import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
-//import ca.uhn.fhir.model.primitive.CodeDt;
-//import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.IncludeParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
@@ -48,7 +45,6 @@ import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.mapping.OmopOrganization;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.model.MyOrganization;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
 
 /**
@@ -110,7 +106,7 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	 * "create=type", which adds a new instance of a resource to the server.
 	 */
 	@Create()
-	public MethodOutcome createOrganization(@ResourceParam MyOrganization theOrganization) {
+	public MethodOutcome createOrganization(@ResourceParam Organization theOrganization) {
 		// validateResource(thePatient);
 
 		Long id=null;
@@ -135,8 +131,8 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	 * overridden to indicate what type of resource this provider supplies.
 	 */
 	@Override
-	public Class<MyOrganization> getResourceType() {
-		return MyOrganization.class;
+	public Class<Organization> getResourceType() {
+		return Organization.class;
 	}
 
 	/**
@@ -151,8 +147,8 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	 *         exists.
 	 */
 	@Read()
-	public MyOrganization getResourceById(@IdParam IdType theId) {
-		MyOrganization retVal = (MyOrganization) myMapper.toFHIR(theId);
+	public Organization getResourceById(@IdParam IdType theId) {
+		Organization retVal = myMapper.toFHIR(theId);
 		if (retVal == null) {
 			throw new ResourceNotFoundException(theId);
 		}
@@ -162,8 +158,8 @@ public class OrganizationResourceProvider implements IResourceProvider {
 
 	@Search()
 	public IBundleProvider findOrganizationByParams(
-			@OptionalParam(name = MyOrganization.SP_RES_ID) TokenParam theOrganizationId,
-			@OptionalParam(name = MyOrganization.SP_NAME) StringParam theName,
+			@OptionalParam(name = Organization.SP_RES_ID) TokenParam theOrganizationId,
+			@OptionalParam(name = Organization.SP_NAME) StringParam theName,
 			
 			@IncludeParam(allow={"Organization:partof"})
 			final Set<Include> theIncludes
@@ -171,10 +167,10 @@ public class OrganizationResourceProvider implements IResourceProvider {
 		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper> ();
 
 		if (theOrganizationId != null) {
-			paramList.addAll(myMapper.mapParameter (MyOrganization.SP_RES_ID, theOrganizationId, false));
+			paramList.addAll(myMapper.mapParameter (Organization.SP_RES_ID, theOrganizationId, false));
 		}
 		if (theName != null) {
-			paramList.addAll(myMapper.mapParameter (MyOrganization.SP_NAME, theName, false));
+			paramList.addAll(myMapper.mapParameter (Organization.SP_NAME, theName, false));
 		}
 		
 		MyBundleProvider myBundleProvider = new MyBundleProvider(paramList, theIncludes, null);
@@ -194,8 +190,8 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	 * @return Returns a resource matching this identifier, or null if none exists.
 	 */
 	@Read()
-	public MyOrganization readOrganization(@IdParam IdType theId) {
-		MyOrganization retval = (MyOrganization) myMapper.toFHIR(theId);
+	public Organization readOrganization(@IdParam IdType theId) {
+		Organization retval = myMapper.toFHIR(theId);
 		if (retval == null) {
 			throw new ResourceNotFoundException(theId);
 		}
@@ -214,7 +210,7 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	 * @return This method returns a "MethodOutcome"
 	 */
 	@Update()
-	public MethodOutcome updateOrganization(@IdParam IdType theId, @ResourceParam MyOrganization theOrganization) {
+	public MethodOutcome updateOrganization(@IdParam IdType theId, @ResourceParam Organization theOrganization) {
 		validateResource(theOrganization);
 
 		Long fhirId=null;
@@ -232,7 +228,7 @@ public class OrganizationResourceProvider implements IResourceProvider {
 	}
 	
 	// TODO: Add more validation code here.
-	private void validateResource(MyOrganization theOrganization) {
+	private void validateResource(Organization theOrganization) {
 	}
 
 	class MyBundleProvider extends OmopFhirBundleProvider implements IBundleProvider {
