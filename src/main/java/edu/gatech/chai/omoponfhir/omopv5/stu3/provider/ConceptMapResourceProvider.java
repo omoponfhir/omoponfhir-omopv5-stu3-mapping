@@ -90,7 +90,7 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 		String mappingTerminologyUrl = System.getenv("MAPPING_TERMINOLOGY_URL");
 		if (mappingTerminologyUrl != null && !mappingTerminologyUrl.isEmpty()) {
 			String mappingRequestUrl = theRequestDetails.getCompleteUrl();
-			if (mappingRequestUrl != null && !mappingRequestUrl.isEmpty()) {
+			if (mappingRequestUrl != null && !mappingRequestUrl.isEmpty() && !"none".equalsIgnoreCase(mappingRequestUrl)) {
 				logger.debug("$translate: RequestDetails - " + theRequestDetails.getCompleteUrl());
 
 				if (!mappingTerminologyUrl.endsWith("/")) {
