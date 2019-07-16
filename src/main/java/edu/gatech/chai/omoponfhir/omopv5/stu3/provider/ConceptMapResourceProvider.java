@@ -56,6 +56,26 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 				preferredPageSize = pageSize;
 			}
 		}
+		
+		// We may need to load local mapping data. Get a path where the mapping CSV file(s)
+		// are located. 
+		String localMappingFilePath = myAppCtx.getServletContext().getInitParameter("localMappingFilePath");
+		
+		// See if we have an environment variable for this mapping file path.
+		String envLocalMappingFilePath = System.getenv("localMappingFilePath");
+		if (envLocalMappingFilePath != null && !envLocalMappingFilePath.trim().isEmpty()) {
+			if ("none".equalsIgnoreCase(envLocalMappingFilePath))
+				localMappingFilePath = null;
+			else
+				localMappingFilePath = envLocalMappingFilePath;
+		} else {
+			if (localMappingFilePath != null && (localMappingFilePath.trim().isEmpty() || "none".equalsIgnoreCase(localMappingFilePath)))
+				localMappingFilePath = null;
+		}
+		
+		if (localMappingFilePath != null) {
+			logger.debug("LocalMappingFilePath is set to "+localMappingFilePath);
+		}
 	}
 
 	@Override
