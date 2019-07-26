@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.ConceptMap;
 import org.hl7.fhir.dstu3.model.IdType;
@@ -44,7 +43,7 @@ public class OmopConceptMap extends BaseOmopResource<ConceptMap, ConceptRelation
 	}
 	
 	private void initialize(WebApplicationContext context) {
-		conceptService = context.getBean(ConceptService.class);
+		conceptService = context.getBean(ConceptService.class);		
 	}
 	
 	@Override

@@ -1,5 +1,7 @@
 package edu.gatech.chai.omoponfhir.omopv5.stu3.provider;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Base64;
 import java.util.List;
 
@@ -57,25 +59,6 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 			}
 		}
 		
-		// We may need to load local mapping data. Get a path where the mapping CSV file(s)
-		// are located. 
-		String localMappingFilePath = myAppCtx.getServletContext().getInitParameter("localMappingFilePath");
-		
-		// See if we have an environment variable for this mapping file path.
-		String envLocalMappingFilePath = System.getenv("localMappingFilePath");
-		if (envLocalMappingFilePath != null && !envLocalMappingFilePath.trim().isEmpty()) {
-			if ("none".equalsIgnoreCase(envLocalMappingFilePath))
-				localMappingFilePath = null;
-			else
-				localMappingFilePath = envLocalMappingFilePath;
-		} else {
-			if (localMappingFilePath != null && (localMappingFilePath.trim().isEmpty() || "none".equalsIgnoreCase(localMappingFilePath)))
-				localMappingFilePath = null;
-		}
-		
-		if (localMappingFilePath != null) {
-			logger.debug("LocalMappingFilePath is set to "+localMappingFilePath);
-		}
 	}
 
 	@Override
@@ -119,10 +102,12 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 
 				int urlTranslateIndex = mappingRequestUrl.indexOf("$translate");
 				if (urlTranslateIndex >= 0) {
-					String remoteMappingTerminologyUrl = mappingTerminologyUrl
+					String remoteMappingTerminologyUrlEncoded = mappingTerminologyUrl
 							+ mappingRequestUrl.substring(urlTranslateIndex);
-
+					
+					String remoteMappingTerminologyUrl = remoteMappingTerminologyUrlEncoded;
 					try {
+						remoteMappingTerminologyUrl = URLDecoder.decode(remoteMappingTerminologyUrlEncoded, "UTF-8");
 						RestTemplate restTemplate = new RestTemplate();
 
 						String authTypeEnv = System.getenv("AUTH_TYPE");
@@ -155,7 +140,7 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 								return parameters;
 							}
 						}
-					} catch (RestClientException e) {
+					} catch (RestClientException | UnsupportedEncodingException e) {
 						// We have an error.
 						logger.error("$translate: Error on connecting to Remote ConceptMap server at "
 								+ remoteMappingTerminologyUrl);
