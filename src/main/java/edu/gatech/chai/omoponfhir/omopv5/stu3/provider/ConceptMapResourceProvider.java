@@ -138,6 +138,8 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 							if (parameters != null && !parameters.isEmpty()) {
 								logger.debug("$translate: responding parameters from external server, " + remoteMappingTerminologyUrl);
 								return parameters;
+							} else {
+								logger.debug("$translate: empty parameter received from " + remoteMappingTerminologyUrl + ". Trying local");
 							}
 						}
 					} catch (RestClientException | UnsupportedEncodingException e) {
