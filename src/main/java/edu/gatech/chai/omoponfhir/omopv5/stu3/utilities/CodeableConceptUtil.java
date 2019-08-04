@@ -53,6 +53,14 @@ public class CodeableConceptUtil {
 		return coding;
 	}
 	
+	public static CodeableConcept getCodeableConceptFromOmopConcept(Concept concept, FhirOmopVocabularyMapImpl fhirOmopVocabularyMap) throws FHIRException {
+		CodeableConcept codeableConcept = new CodeableConcept();
+		Coding coding = getCodingFromOmopConcept(concept, fhirOmopVocabularyMap);
+		codeableConcept.addCoding(coding);
+
+		return codeableConcept;
+	}
+
 	public static CodeableConcept getCodeableConceptFromOmopConcept(Concept concept) throws FHIRException {
 		CodeableConcept codeableConcept = new CodeableConcept();
 		addCodingFromOmopConcept (codeableConcept, concept);		

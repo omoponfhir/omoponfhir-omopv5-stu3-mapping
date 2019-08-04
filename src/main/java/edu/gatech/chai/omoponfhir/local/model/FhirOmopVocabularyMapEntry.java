@@ -23,6 +23,24 @@ public class FhirOmopVocabularyMapEntry {
 	public FhirOmopVocabularyMapEntry() {
 		
 	}
+
+	public FhirOmopVocabularyMapEntry(String omopConceptCodeName, String fhirUrlSystemName, String otherSystemName) {
+		if (omopConceptCodeName != null && !omopConceptCodeName.isEmpty()) {
+			this.omopConceptCodeName = omopConceptCodeName;
+		} else {
+			return;
+		}
+		
+		if ((fhirUrlSystemName == null || fhirUrlSystemName.isEmpty())
+				&& (otherSystemName == null || otherSystemName.isEmpty()))
+			return;
+		
+		if (fhirUrlSystemName != null && !fhirUrlSystemName.isEmpty())
+			this.fhirUrlSystemName = fhirUrlSystemName;
+		
+		if (otherSystemName != null && !otherSystemName.isEmpty())
+			this.otherSystemName = otherSystemName;
+	}
 	
 	public String getOmopConceptCodeName() {
 		return this.omopConceptCodeName;

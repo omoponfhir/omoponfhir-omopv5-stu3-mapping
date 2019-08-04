@@ -72,7 +72,7 @@ public class OmopMedication extends BaseOmopResource<Medication, Concept, Concep
 		medication.setId(new IdType(fhirId));
 		CodeableConcept medicationCodeableConcept;
 		try {
-			medicationCodeableConcept = CodeableConceptUtil.getCodeableConceptFromOmopConcept(entity);
+			medicationCodeableConcept = CodeableConceptUtil.getCodeableConceptFromOmopConcept(entity, fhirOmopVocabularyMap);
 		} catch (FHIRException e1) {
 			e1.printStackTrace();
 			return null;
