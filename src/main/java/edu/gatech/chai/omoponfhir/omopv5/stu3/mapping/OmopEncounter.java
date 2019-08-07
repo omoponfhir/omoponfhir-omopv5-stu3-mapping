@@ -195,13 +195,14 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 		}
 
 		// set condition if available.
-		ParameterWrapper param = new ParameterWrapper();
-		param.setParameterType("Long");
-		param.setParameters(Arrays.asList("visitOccurrence.id"));
-		param.setOperators(Arrays.asList("="));
-		param.setValues(Arrays.asList(String.valueOf(visitOccurrence.getId())));
-		List<ParameterWrapper> params = Arrays.asList(param);
-		List<ConditionOccurrence> conditions = conditionOccurrenceService.searchWithParams(0, 0, params, null);
+//		ParameterWrapper param = new ParameterWrapper();
+//		param.setParameterType("Long");
+//		param.setParameters(Arrays.asList("visitOccurrence.id"));
+//		param.setOperators(Arrays.asList("="));
+//		param.setValues(Arrays.asList(String.valueOf(visitOccurrence.getId())));
+//		List<ParameterWrapper> params = Arrays.asList(param);
+//		List<ConditionOccurrence> conditions = conditionOccurrenceService.searchWithParams(0, 0, params, null);
+		List<ConditionOccurrence> conditions = conditionOccurrenceService.searchByColumnString("visitOccurrence.id", visitOccurrence.getId());
 		for (ConditionOccurrence condition : conditions) {
 			Reference conditionReference = new Reference(new IdType(ConditionResourceProvider.getType(), condition.getId()));
 			DiagnosisComponent diagnosisComponent = new DiagnosisComponent();
