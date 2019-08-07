@@ -29,6 +29,7 @@ import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Period;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.Encounter.DiagnosisComponent;
 import org.hl7.fhir.dstu3.model.Encounter.EncounterParticipantComponent;
 import org.hl7.fhir.dstu3.model.Encounter.EncounterStatus;
 import org.hl7.fhir.dstu3.model.codesystems.V3ActCode;
@@ -37,17 +38,20 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.rest.param.TokenParam;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.ConditionResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.OrganizationResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PractitionerResourceProvider;
 import edu.gatech.chai.omopv5.dba.service.CareSiteService;
+import edu.gatech.chai.omopv5.dba.service.ConditionOccurrenceService;
 import edu.gatech.chai.omopv5.dba.service.FPersonService;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
 import edu.gatech.chai.omopv5.dba.service.ProviderService;
 import edu.gatech.chai.omopv5.dba.service.VisitOccurrenceService;
 import edu.gatech.chai.omopv5.model.entity.CareSite;
 import edu.gatech.chai.omopv5.model.entity.Concept;
+import edu.gatech.chai.omopv5.model.entity.ConditionOccurrence;
 import edu.gatech.chai.omopv5.model.entity.FPerson;
 import edu.gatech.chai.omopv5.model.entity.Provider;
 import edu.gatech.chai.omopv5.model.entity.VisitOccurrence;
@@ -59,6 +63,7 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 	private FPersonService fPersonService;
 	private CareSiteService careSiteService;
 	private ProviderService providerService;
+	private ConditionOccurrenceService conditionOccurrenceService;
 
 	public OmopEncounter() {
 		super(ContextLoaderListener.getCurrentWebApplicationContext(), VisitOccurrence.class,
@@ -76,6 +81,7 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 		fPersonService = context.getBean(FPersonService.class);
 		careSiteService = context.getBean(CareSiteService.class);
 		providerService = context.getBean(ProviderService.class);
+		conditionOccurrenceService = context.getBean(ConditionOccurrenceService.class);
 	}
 
 	public static OmopEncounter getInstance() {
@@ -188,6 +194,21 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 			encounter.addParticipant(participate);
 		}
 
+		// set condition if available.
+		ParameterWrapper param = new ParameterWrapper();
+		param.setParameterType("Long");
+		param.setParameters(Arrays.asList("visitOccurrence.id"));
+		param.setOperators(Arrays.asList("="));
+		param.setValues(Arrays.asList(String.valueOf(visitOccurrence.getId())));
+		List<ParameterWrapper> params = Arrays.asList(param);
+		List<ConditionOccurrence> conditions = conditionOccurrenceService.searchWithParams(0, 0, params, null);
+		for (ConditionOccurrence condition : conditions) {
+			Reference conditionReference = new Reference(new IdType(ConditionResourceProvider.getType(), condition.getId()));
+			DiagnosisComponent diagnosisComponent = new DiagnosisComponent();
+			diagnosisComponent.setCondition(conditionReference);
+			encounter.addDiagnosis(diagnosisComponent);
+		}
+		
 		return encounter;
 	}
 
@@ -355,6 +376,10 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 				}
 			}
 		}
+		// NOTE: diagnosis.condition 
+		//       This contains what condition is pointing to this encounter. 
+		//       This is a link, which the conditionOccurrence should already have in OMOP.
+		//       So, we do not import this information here.
 
 		// TODO: How do we handle Location Resource. This is different from
 		// Location table in OMOP v5.
