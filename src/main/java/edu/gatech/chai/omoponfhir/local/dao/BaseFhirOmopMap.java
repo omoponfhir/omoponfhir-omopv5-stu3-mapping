@@ -16,12 +16,12 @@ public class BaseFhirOmopMap {
 		try {
 			Class.forName("org.sqlite.JDBC");
 			conn = DriverManager.getConnection(url);
-			logger.info("Connected to database");
+			logger.debug("Connected to database");
 		} catch (SQLException e) {
-			logger.info(e.getMessage());
+			logger.debug(e.getMessage());
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			logger.info(e.getMessage());
+			logger.debug(e.getMessage());
 			e.printStackTrace();
 		}
 

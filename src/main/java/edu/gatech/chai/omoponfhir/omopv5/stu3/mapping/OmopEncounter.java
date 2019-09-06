@@ -248,6 +248,9 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
+		case Encounter.SP_DIAGNOSIS:
+			// TODO: handle diagnosis. This is condition id. Add join capability to parameter wrapper.
+			break;
 		case "Patient:" + Patient.SP_RES_ID:
 			addParamlistForPatientIDName(parameter, (String)value, paramWrapper, mapList);
 			break;

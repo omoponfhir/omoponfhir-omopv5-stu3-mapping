@@ -57,7 +57,7 @@ public class ScheduledTask {
 		fhirOmopVocabularyMap = new FhirOmopVocabularyMapImpl();
 	}
 
-	@Scheduled(fixedDelay = 30000)
+	@Scheduled(fixedDelay = 60000)
 	public void localCodeMappingTask() {
 		// We may need to load local mapping data. Get a path where the mapping CSV
 		// file(s) are located and load them if files exist. The files will then be

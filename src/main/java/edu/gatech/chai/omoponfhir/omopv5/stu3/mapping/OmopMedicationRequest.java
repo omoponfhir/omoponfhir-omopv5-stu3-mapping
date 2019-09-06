@@ -304,6 +304,7 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			mapList.add(paramWrapper);
 			break;
 		case MedicationRequest.SP_CODE:
+		case "Medication:"+Medication.SP_CODE:
 			String system = ((TokenParam) value).getSystem();
 			String code = ((TokenParam) value).getValue();
 			
@@ -393,6 +394,15 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			paramWrapper.setParameters(Arrays.asList("fPerson.id"));
 			paramWrapper.setOperators(Arrays.asList("="));
 			paramWrapper.setValues(Arrays.asList(omopPersonIdString));
+			paramWrapper.setRelationship("or");
+			mapList.add(paramWrapper);
+			break;
+		case "Medication:"+Medication.SP_RES_ID:
+			String pId = (String) value;
+			paramWrapper.setParameterType("Long");
+			paramWrapper.setParameters(Arrays.asList("drugConcept.id"));
+			paramWrapper.setOperators(Arrays.asList("="));
+			paramWrapper.setValues(Arrays.asList(pId));
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;

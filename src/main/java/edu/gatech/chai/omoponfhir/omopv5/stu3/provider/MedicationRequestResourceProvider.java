@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.OperationOutcome.IssueSeverity;
@@ -182,6 +183,7 @@ public class MedicationRequestResourceProvider implements IResourceProvider {
 	@Search()
 	public IBundleProvider findMedicationRequestsByParams(
 			@OptionalParam(name = MedicationRequest.SP_CODE) TokenOrListParam theOrCodes,
+			@OptionalParam(name = MedicationRequest.SP_MEDICATION, chainWhitelist={"", Medication.SP_CODE}) ReferenceParam theMedication,
 			@OptionalParam(name = MedicationRequest.SP_CONTEXT) ReferenceParam theContext,
 			@OptionalParam(name = MedicationRequest.SP_AUTHOREDON) DateParam theDate,
 			@OptionalParam(name = MedicationRequest.SP_PATIENT) ReferenceParam thePatient,
@@ -207,7 +209,16 @@ public class MedicationRequestResourceProvider implements IResourceProvider {
 			paramList.addAll(myMapper.mapParameter (MedicationRequest.SP_AUTHOREDON, theDate, false));
 		}
 
-
+		if (theMedication != null) {
+			String medicationChain = theMedication.getChain();
+			if (Medication.SP_CODE.equals(medicationChain)) {
+				TokenParam medicationCode = theMedication.toTokenParam(FhirContext.forDstu3());
+				paramList.addAll(getMyMapper().mapParameter("Medication:"+Medication.SP_CODE, medicationCode, false));
+			} else if ("".equals(medicationChain)) {
+				paramList.addAll(getMyMapper().mapParameter("Medication:"+Medication.SP_RES_ID, theMedication.getValue(), false));
+			}
+		}
+		
 		if (theSubject != null) {
 			if (theSubject.getResourceType().equals(PatientResourceProvider.getType())) {
 				thePatient = theSubject;

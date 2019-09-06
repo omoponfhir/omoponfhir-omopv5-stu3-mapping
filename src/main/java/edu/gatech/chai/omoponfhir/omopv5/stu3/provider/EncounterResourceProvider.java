@@ -122,6 +122,7 @@ public class EncounterResourceProvider implements IResourceProvider {
 					Patient.SP_NAME }) ReferenceParam thePatient,
 			@OptionalParam(name = Encounter.SP_SUBJECT, chainWhitelist = { "",
 					Patient.SP_NAME }) ReferenceParam theSubject,
+			@OptionalParam(name = Encounter.SP_DIAGNOSIS) ReferenceParam theDiagnosis,
 
 			@IncludeParam(allow = { "Encounter:appointment", "Encounter:diagnosis", "Encounter:episodeofcare",
 					"Encounter:incomingreferral", "Encounter:location", "Encounter:part-of", "Encounter:participant",
@@ -167,6 +168,10 @@ public class EncounterResourceProvider implements IResourceProvider {
 				paramList.addAll(
 						getMyMapper().mapParameter("Patient:" + Patient.SP_RES_ID, thePatient.getIdPart(), false));
 			}
+		}
+		
+		if (theDiagnosis != null) {
+			paramList.addAll(getMyMapper().mapParameter(Encounter.SP_DIAGNOSIS, theDiagnosis, false));
 		}
 
 		MyBundleProvider myBundleProvider = new MyBundleProvider(paramList, theIncludes, theReverseIncludes);
