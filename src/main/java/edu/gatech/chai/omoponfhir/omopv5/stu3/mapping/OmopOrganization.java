@@ -39,6 +39,7 @@ import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.AddressUtil;
 import edu.gatech.chai.omopv5.dba.service.CareSiteService;
 import edu.gatech.chai.omopv5.dba.service.LocationService;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
+import edu.gatech.chai.omopv5.dba.service.VocabularyService;
 import edu.gatech.chai.omopv5.model.entity.CareSite;
 import edu.gatech.chai.omopv5.model.entity.Concept;
 import edu.gatech.chai.omopv5.model.entity.Location;
@@ -47,6 +48,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 	
 	private static OmopOrganization omopOrganization = new OmopOrganization();
 	private LocationService locationService;
+	private VocabularyService vocabularyService;
 
 	public OmopOrganization(WebApplicationContext context) {
 		super(context, CareSite.class, CareSiteService.class, OrganizationResourceProvider.getType());
@@ -61,6 +63,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 	private void initialize(WebApplicationContext context) {		
 		// Get bean for other service(s) for mapping.
 		locationService = context.getBean(LocationService.class);
+		vocabularyService = context.getBean(VocabularyService.class);
 	}
 	
 	public static OmopOrganization getInstance() {
@@ -79,7 +82,8 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 
 		if (careSite.getPlaceOfServiceConcept() != null) {
 			String codeString = careSite.getPlaceOfServiceConcept().getConceptCode();
-			String systemUriString = careSite.getPlaceOfServiceConcept().getVocabulary().getVocabularyReference();
+//			String systemUriString = careSite.getPlaceOfServiceConcept().getVocabulary().getVocabularyReference();
+			String systemUriString = vocabularyService.findById(careSite.getPlaceOfServiceConcept().getVocabulary()).getVocabularyReference();
 			String displayString = careSite.getPlaceOfServiceConcept().getName();
 
 			CodeableConcept typeCodeableConcept = new CodeableConcept()

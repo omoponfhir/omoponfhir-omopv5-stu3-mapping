@@ -233,11 +233,11 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(code));
 			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary.id"));
+				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));				
 			} else {
-				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary.id", "typeConcept.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary", "typeConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("=","="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 			}
@@ -457,7 +457,7 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 		// type: map OMOP's Note Type concept to LOINC code if possible.
 		Concept omopTypeConcept = entity.getType();
 		CodeableConcept typeCodeableConcept = null;
-		if ("Note Type".equals(omopTypeConcept.getVocabulary().getId())) {
+		if ("Note Type".equals(omopTypeConcept.getVocabulary())) {
 			Long loincConceptId = OmopNoteTypeMapping.getLoincConceptIdFor(omopTypeConcept.getId());
 			System.out.println("origin:"+omopTypeConcept.getId()+" loinc:"+loincConceptId);
 			try {

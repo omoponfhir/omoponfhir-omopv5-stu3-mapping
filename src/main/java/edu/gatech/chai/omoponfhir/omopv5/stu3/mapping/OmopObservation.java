@@ -128,12 +128,17 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		Observation observation = new Observation();
 		observation.setId(new IdType(fhirId));
 
-		String omopVocabulary = fObservationView.getObservationConcept().getVocabulary().getId();
+		long start = System.currentTimeMillis();
+		
+		String omopVocabulary = fObservationView.getObservationConcept().getVocabulary();
 		String systemUriString = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(omopVocabulary);
 		if ("None".equals(systemUriString)) {
 			// If we can't find FHIR Uri or system name, just use Omop Vocabulary Id.
 			systemUriString = omopVocabulary;
 		}
+
+		long vocabTS = System.currentTimeMillis()-start;
+		System.out.println("vocab: at "+Long.toString(vocabTS)+" duration: "+Long.toString(vocabTS));
 
 		// If we have unit, this should be used across all the value.
 		String unitSystemUri = null;
@@ -149,8 +154,11 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			}
 		}
 		
+		long unitTS = System.currentTimeMillis()-start;
+		System.out.println("unit: at "+Long.toString(unitTS)+" duration: "+Long.toString(unitTS-vocabTS));
+		
 		if (unitConcept != null && unitConcept.getId() != 0L) {
-			String omopUnitVocabularyId = unitConcept.getVocabulary().getId();
+			String omopUnitVocabularyId = unitConcept.getVocabulary();
 			unitSystemUri = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(omopUnitVocabularyId);
 			if ("None".equals(unitSystemUri)) {
 				unitSystemUri = omopUnitVocabularyId;
@@ -160,6 +168,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			unitCode = unitConcept.getConceptCode();
 		} 
 
+		long unitConceptTS = System.currentTimeMillis()-start;
+		System.out.println("unitConcept: at "+Long.toString(unitConceptTS)+" duration: "+Long.toString(unitConceptTS-unitTS));
+
 		String codeString = fObservationView.getObservationConcept().getConceptCode();
 		String displayString;
 		if (fObservationView.getObservationConcept().getId() == 0L) {
@@ -167,6 +178,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		} else {
 			displayString = fObservationView.getObservationConcept().getName();
 		}
+
+		long codeStringTS = System.currentTimeMillis()-start;
+		System.out.println("codeString: at "+Long.toString(codeStringTS)+" duration: "+Long.toString(codeStringTS-unitConceptTS));
 
 		// OMOP database maintains Systolic and Diastolic Blood Pressures
 		// separately.
@@ -231,9 +245,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 						quantity.setUnit(diastolicDb.getUnitConcept().getName());
 						quantity.setCode(diastolicDb.getUnitConcept().getConceptCode());
 						String unitSystem = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(
-								diastolicDb.getUnitConcept().getVocabulary().getId());
+								diastolicDb.getUnitConcept().getVocabulary());
 						if ("None".equals(unitSystem))
-							unitSystem = diastolicDb.getUnitConcept().getVocabulary().getId();
+							unitSystem = diastolicDb.getUnitConcept().getVocabulary();
 						quantity.setSystem(unitSystem);
 						comp.setValue(quantity);
 					} else {
@@ -244,9 +258,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 								quantity.setUnit(diastolicUnitConcept.getName());
 								quantity.setCode(diastolicUnitConcept.getConceptCode());
 								String unitSystem = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(
-										diastolicUnitConcept.getVocabulary().getId());
+										diastolicUnitConcept.getVocabulary());
 								if ("None".equals(unitSystem))
-									unitSystem = diastolicUnitConcept.getVocabulary().getId();
+									unitSystem = diastolicUnitConcept.getVocabulary();
 								quantity.setSystem(unitSystem);
 							} else {
 								quantity.setUnit(diastolicUnitSource);
@@ -289,9 +303,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				// vocabulary is a required attribute for concept, then it's
 				// expected to not be null
 				String valueSystem = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(
-						fObservationView.getValueAsConcept().getVocabulary().getId());
+						fObservationView.getValueAsConcept().getVocabulary());
 				if ("None".equals(valueSystem))
-					valueSystem = fObservationView.getValueAsConcept().getVocabulary().getId();
+					valueSystem = fObservationView.getValueAsConcept().getVocabulary();
 				Coding coding = new Coding(valueSystem, fObservationView.getValueAsConcept().getConceptCode(),
 						fObservationView.getValueAsConcept().getName());
 				CodeableConcept valueAsConcept = new CodeableConcept();
@@ -301,6 +315,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				observation.setValue(new StringType(fObservationView.getValueSourceValue()));
 			}
 		}
+
+		long mesureOrBPTS = System.currentTimeMillis()-start;
+		System.out.println("measureOrBPTS: at "+Long.toString(mesureOrBPTS)+" duration: "+Long.toString(mesureOrBPTS-codeStringTS));
 
 		if (fObservationView.getRangeLow() != null) {
 			SimpleQuantity low = new SimpleQuantity();
@@ -333,15 +350,26 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				observation.setEffective(appliesDate);
 			}
 		}
+		
+		long directFieldTS = System.currentTimeMillis()-start;
+		System.out.println("directFieldTS: at "+Long.toString(directFieldTS)+" duration: "+Long.toString(directFieldTS-mesureOrBPTS));
+
 		if (fObservationView.getFPerson() != null) {
 			Reference personRef = new Reference(
 					new IdType(PatientResourceProvider.getType(), fObservationView.getFPerson().getId()));
 			personRef.setDisplay(fObservationView.getFPerson().getNameAsSingleString());
 			observation.setSubject(personRef);
 		}
+		
+		long personTS = System.currentTimeMillis()-start;
+		System.out.println("personTS: at "+Long.toString(personTS)+" duration: "+Long.toString(personTS-directFieldTS));
+
 		if (fObservationView.getVisitOccurrence() != null)
 			observation.getContext().setReferenceElement(
 					new IdType(EncounterResourceProvider.getType(), fObservationView.getVisitOccurrence().getId()));
+
+		long visitTS = System.currentTimeMillis()-start;
+		System.out.println("visitTS: at "+Long.toString(visitTS)+" duration: "+Long.toString(visitTS-personTS));
 
 		if (fObservationView.getTypeConcept() != null) {
 			if (fObservationView.getTypeConcept().getId() == 44818701L) {
@@ -381,6 +409,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			}
 		}
 
+		long obsTypeTS = System.currentTimeMillis()-start;
+		System.out.println("obsTypeTS: at "+Long.toString(obsTypeTS)+" duration: "+Long.toString(obsTypeTS-visitTS));
+
 		if (fObservationView.getProvider() != null) {
 			Reference performerRef = new Reference(
 					new IdType(PractitionerResourceProvider.getType(), fObservationView.getProvider().getId()));
@@ -389,6 +420,10 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				performerRef.setDisplay(providerName);
 			observation.addPerformer(performerRef);
 		}
+		
+		long providerTS = System.currentTimeMillis()-start;
+		System.out.println("providerTS: at "+Long.toString(providerTS)+" duration: "+Long.toString(providerTS-obsTypeTS));
+
 
 		String identifierString = fObservationView.getSourceValue();
 		if (identifierString != null && !identifierString.isEmpty()) {
@@ -396,6 +431,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			identifier.setValue(identifierString);
 			observation.addIdentifier(identifier);
 		}
+
+		long identifierTS = System.currentTimeMillis()-start;
+		System.out.println("identifierTS: at "+Long.toString(identifierTS)+" duration: "+Long.toString(identifierTS-providerTS));
 
 		if (fObservationView.getId() > 0) {
 			List<BaseEntity> methods = factRelationshipService.searchMeasurementUsingMethod(fObservationView.getId());
@@ -427,6 +465,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				observation.setComment(comments);
 			}
 		}
+
+		long methodTS = System.currentTimeMillis()-start;
+		System.out.println("methodTS: at "+Long.toString(methodTS)+" duration: "+Long.toString(methodTS-identifierTS));
 
 		return observation;
 	}
@@ -1560,7 +1601,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 
 			for (Concept conceptForCode : conceptForCodes) {
 				String domain = conceptForCode.getDomain();
-				String systemName = conceptForCode.getVocabulary().getId();
+				String systemName = conceptForCode.getVocabulary();
 				try {
 //					List<Identifier> identifiers = fhirResource.getIdentifier();
 //					String identifier_value = null;
@@ -2042,8 +2083,13 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			List<IBaseResource> listResources, List<String> includes, String sort) {
 		paramList.add(exceptionParam4Search);
 
+		long start = System.currentTimeMillis();
+		
 		List<FObservationView> fObservationViews = getMyOmopService().searchWithParams(fromIndex, toIndex, paramList,
 				sort);
+
+		long gettingObses = System.currentTimeMillis()-start;
+		System.out.println("gettingObses: at "+Long.toString(gettingObses)+" duration: "+Long.toString(gettingObses));
 
 		for (FObservationView fObservationView : fObservationViews) {
 			Long omopId = fObservationView.getId();
@@ -2173,7 +2219,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 						// will search matching diastolic value.
 						paramWrapper.setParameterType("String");
 						paramWrapper.setParameters(
-								Arrays.asList("observationConcept.vocabulary.id", "observationConcept.conceptCode"));
+								Arrays.asList("observationConcept.vocabulary", "observationConcept.conceptCode"));
 						paramWrapper.setOperators(Arrays.asList("like", "like"));
 						paramWrapper.setValues(Arrays.asList(omopVocabulary, SYSTOLIC_LOINC_CODE));
 						paramWrapper.setRelationship("and");
@@ -2181,7 +2227,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 					} else {
 						paramWrapper.setParameterType("String");
 						paramWrapper.setParameters(
-								Arrays.asList("observationConcept.vocabulary.id", "observationConcept.conceptCode"));
+								Arrays.asList("observationConcept.vocabulary", "observationConcept.conceptCode"));
 						paramWrapper.setOperators(Arrays.asList("like", "like"));
 						paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 						paramWrapper.setRelationship("and");
@@ -2190,7 +2236,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				} else {
 					// We have no code specified. Search by system.
 					paramWrapper.setParameterType("String");
-					paramWrapper.setParameters(Arrays.asList("observationConcept.vocabulary.id"));
+					paramWrapper.setParameters(Arrays.asList("observationConcept.vocabulary"));
 					paramWrapper.setOperators(Arrays.asList("like"));
 					paramWrapper.setValues(Arrays.asList(omopVocabulary));
 					paramWrapper.setRelationship("or");
@@ -2217,7 +2263,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 					if (code == null || code.isEmpty()) {
 						// yes system but no code.
 						paramWrapper.setParameterType("String");
-						paramWrapper.setParameters(Arrays.asList("observationConcept.vocabulary.id"));
+						paramWrapper.setParameters(Arrays.asList("observationConcept.vocabulary"));
 						paramWrapper.setOperators(Arrays.asList("like"));
 						paramWrapper.setValues(Arrays.asList(omopVocabulary));
 						paramWrapper.setRelationship("or");
@@ -2226,7 +2272,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 						// We have both system and code.
 						paramWrapper.setParameterType("String");
 						paramWrapper.setParameters(
-								Arrays.asList("observationConcept.vocabulary.id", "observationConcept.conceptCode"));
+								Arrays.asList("observationConcept.vocabulary", "observationConcept.conceptCode"));
 						paramWrapper.setOperators(Arrays.asList("like", "like"));
 						paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 						paramWrapper.setRelationship("and");

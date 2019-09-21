@@ -285,7 +285,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 		if (unitConcept != null) {
 			try {
 				String unitFhirUri = OmopCodeableConceptMapping
-						.fhirUriforOmopVocabulary(unitConcept.getVocabulary().getId());
+						.fhirUriforOmopVocabulary(unitConcept.getVocabulary());
 				if (!"None".equals(unitFhirUri)) {
 					String unitDisplay = unitConcept.getName();
 					String unitCode = unitConcept.getConceptCode();
@@ -309,7 +309,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 		if (routeConcept != null) {
 			try {
 				String myUri = OmopCodeableConceptMapping
-						.fhirUriforOmopVocabulary(routeConcept.getVocabulary().getId());
+						.fhirUriforOmopVocabulary(routeConcept.getVocabulary());
 				if (!"None".equals(myUri)) {
 					CodeableConcept routeCodeableConcept = new CodeableConcept();
 					Coding routeCoding = new Coding();
@@ -418,7 +418,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 					// We need to loop 
 					ParameterWrapper myParamWrapper = new ParameterWrapper();
 					myParamWrapper.setParameterType("Code:In");
-					myParamWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id", "drugConcept.conceptCode"));
+					myParamWrapper.setParameters(Arrays.asList("drugConcept.vocabulary", "drugConcept.conceptCode"));
 					myParamWrapper.setOperators(Arrays.asList("=", "in"));
 
 					String valueSetSystem = include.getSystem();
@@ -447,7 +447,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 					// We need to loop 
 					ParameterWrapper myParamWrapper = new ParameterWrapper();
 					myParamWrapper.setParameterType("Code:In");
-					myParamWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id", "drugConcept.conceptCode"));
+					myParamWrapper.setParameters(Arrays.asList("drugConcept.vocabulary", "drugConcept.conceptCode"));
 					myParamWrapper.setOperators(Arrays.asList("=", "out"));
 
 					String valueSetSystem = exclude.getSystem();
@@ -486,11 +486,11 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 					paramWrapper.setOperators(Arrays.asList("like"));
 					paramWrapper.setValues(Arrays.asList(code));
 				} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-					paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id"));
+					paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary"));
 					paramWrapper.setOperators(Arrays.asList("like"));
 					paramWrapper.setValues(Arrays.asList(omopVocabulary));
 				} else {
-					paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id", "drugConcept.conceptCode"));
+					paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary", "drugConcept.conceptCode"));
 					paramWrapper.setOperators(Arrays.asList("like", "like"));
 					paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 				}

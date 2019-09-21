@@ -261,7 +261,7 @@ public class ScheduledTask {
 
 							sourceConcept.setName(conceptName);
 							sourceConcept.setDomain(targetConcept.getDomain());
-							sourceConcept.setVocabulary(myVocab);
+							sourceConcept.setVocabulary(myVocab.getId());
 							sourceConcept.setConceptClass(targetConcept.getConceptClass());
 							sourceConcept.setConceptCode(sourceCode);
 							sourceConcept.setValidStartDate(targetConcept.getValidStartDate());
@@ -455,7 +455,7 @@ public class ScheduledTask {
 		conceptVoc.setName(name);
 		conceptVoc.setDomain("Metadata");
 		
-		conceptVoc.setVocabulary(new Vocabulary(vocabId));
+		conceptVoc.setVocabulary(vocabId);
 		conceptVoc.setConceptClass(vocabId);
 		conceptVoc.setConceptCode("OMOPonFHIR generated");
 		conceptVoc.setValidStartDate(new Date(0L));

@@ -204,7 +204,7 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 		String unitCode = null;
 		String unitSystem = null;
 		if (unitConcept != null) {
-			String omopUnitVocab = unitConcept.getVocabulary().getId();
+			String omopUnitVocab = unitConcept.getVocabulary();
 			String omopUnitCode = unitConcept.getConceptCode();
 			String omopUnitName = unitConcept.getName();
 			
@@ -212,7 +212,8 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			try {
 				fhirUnitUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(omopUnitVocab);
 				if ("None".equals(fhirUnitUri)) {
-					fhirUnitUri = unitConcept.getVocabulary().getVocabularyReference();
+//					fhirUnitUri = unitConcept.getVocabulary().getVocabularyReference();
+					fhirUnitUri = "NotAvailable";
 				}
 
 				unitUnit = omopUnitName;
@@ -329,12 +330,12 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 				paramWrapper.setValues(Arrays.asList(code));
 				paramWrapper.setRelationship("or");
 			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id"));
+				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary"));
 				paramWrapper.setOperators(Arrays.asList("like"));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));
 				paramWrapper.setRelationship("or");
 			} else {
-				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary.id", "drugConcept.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary", "drugConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("like","like"));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 				paramWrapper.setRelationship("and");

@@ -195,11 +195,11 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(code));
 			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-				paramWrapper.setParameters(Arrays.asList("conceptId.vocabulary.id"));
+				paramWrapper.setParameters(Arrays.asList("conceptId.vocabulary"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));
 			} else {
-				paramWrapper.setParameters(Arrays.asList("conceptId.vocabulary.id", "conceptId.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("conceptId.vocabulary", "conceptId.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("=", "="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 			}

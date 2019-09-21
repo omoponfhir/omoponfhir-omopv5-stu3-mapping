@@ -85,7 +85,7 @@ public class OmopDevice extends BaseOmopResource<Device, DeviceExposure, DeviceE
 		Concept entityConcept = entity.getDeviceConcept();
 		String systemUri = new String();
 		try {
-			systemUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(entityConcept.getVocabulary().getId());
+			systemUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(entityConcept.getVocabulary());
 		} catch (FHIRException e) {
 			e.printStackTrace();
 		}
@@ -216,7 +216,7 @@ public class OmopDevice extends BaseOmopResource<Device, DeviceExposure, DeviceE
 				if (code == null || code.isEmpty()) {
 					// yes system but no code.
 					paramWrapper.setParameterType("String");
-					paramWrapper.setParameters(Arrays.asList("deviceConcept.vocabulary.id"));
+					paramWrapper.setParameters(Arrays.asList("deviceConcept.vocabulary"));
 					paramWrapper.setOperators(Arrays.asList("like"));
 					paramWrapper.setValues(Arrays.asList(omopVocabulary));
 					paramWrapper.setRelationship("or");
@@ -225,7 +225,7 @@ public class OmopDevice extends BaseOmopResource<Device, DeviceExposure, DeviceE
 					// We have both system and code.
 					paramWrapper.setParameterType("String");
 					paramWrapper.setParameters(
-							Arrays.asList("deviceConcept.vocabulary.id", "deviceConcept.conceptCode"));
+							Arrays.asList("deviceConcept.vocabulary", "deviceConcept.conceptCode"));
 					paramWrapper.setOperators(Arrays.asList("like", "like"));
 					paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 					paramWrapper.setRelationship("and");
