@@ -183,7 +183,8 @@ public class MedicationRequestResourceProvider implements IResourceProvider {
 	@Search()
 	public IBundleProvider findMedicationRequestsByParams(
 			@OptionalParam(name = MedicationRequest.SP_CODE) TokenOrListParam theOrCodes,
-			@OptionalParam(name = MedicationRequest.SP_MEDICATION, chainWhitelist={"", Medication.SP_CODE}) ReferenceParam theMedication,
+			@OptionalParam(name = MedicationRequest.SP_MEDICATION+"."+Medication.SP_CODE) TokenOrListParam theMedicationOrCodes,
+			@OptionalParam(name = MedicationRequest.SP_MEDICATION, chainWhitelist={""}) ReferenceParam theMedication,
 			@OptionalParam(name = MedicationRequest.SP_CONTEXT) ReferenceParam theContext,
 			@OptionalParam(name = MedicationRequest.SP_AUTHOREDON) DateParam theDate,
 			@OptionalParam(name = MedicationRequest.SP_PATIENT) ReferenceParam thePatient,
@@ -209,12 +210,20 @@ public class MedicationRequestResourceProvider implements IResourceProvider {
 			paramList.addAll(myMapper.mapParameter (MedicationRequest.SP_AUTHOREDON, theDate, false));
 		}
 
+		if (theMedicationOrCodes != null) {
+			List<TokenParam> codes = theMedicationOrCodes.getValuesAsQueryTokens();
+
+			boolean orValue = true;
+			if (codes.size() <= 1)
+				orValue = false;
+			for (TokenParam code : codes) {
+				paramList.addAll(myMapper.mapParameter("Medication:"+Medication.SP_CODE, code, orValue));
+			}
+		}
+		
 		if (theMedication != null) {
 			String medicationChain = theMedication.getChain();
-			if (Medication.SP_CODE.equals(medicationChain)) {
-				TokenParam medicationCode = theMedication.toTokenParam(FhirContext.forDstu3());
-				paramList.addAll(getMyMapper().mapParameter("Medication:"+Medication.SP_CODE, medicationCode, false));
-			} else if ("".equals(medicationChain)) {
+			if ("".equals(medicationChain)) {
 				paramList.addAll(getMyMapper().mapParameter("Medication:"+Medication.SP_RES_ID, theMedication.getValue(), false));
 			}
 		}
