@@ -31,6 +31,7 @@ import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationStatement;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.MedicationStatement.MedicationStatementStatus;
 import org.hl7.fhir.dstu3.model.MedicationStatement.MedicationStatementTaken;
 import org.hl7.fhir.dstu3.model.Period;
@@ -540,20 +541,29 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
-		case MedicationStatement.SP_PATIENT:
-			ReferenceParam patientReference = ((ReferenceParam) value);
-			Long fhirPatientId = patientReference.getIdPartAsLong();
-			Long omopPersonId = IdMapping.getOMOPfromFHIR(fhirPatientId, PatientResourceProvider.getType());
-
-			String omopPersonIdString = String.valueOf(omopPersonId);
-
-			paramWrapper.setParameterType("Long");
-			paramWrapper.setParameters(Arrays.asList("fPerson.id"));
-			paramWrapper.setOperators(Arrays.asList("="));
-			paramWrapper.setValues(Arrays.asList(omopPersonIdString));
-			paramWrapper.setRelationship("or");
-			mapList.add(paramWrapper);
+		case "Patient:" + Patient.SP_RES_ID:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
 			break;
+		case "Patient:" + Patient.SP_NAME:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
+			break;
+		case "Patient:" + Patient.SP_IDENTIFIER:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
+			break;
+//		case MedicationStatement.SP_PATIENT:
+//			ReferenceParam patientReference = ((ReferenceParam) value);
+//			Long fhirPatientId = patientReference.getIdPartAsLong();
+//			Long omopPersonId = IdMapping.getOMOPfromFHIR(fhirPatientId, PatientResourceProvider.getType());
+//
+//			String omopPersonIdString = String.valueOf(omopPersonId);
+//
+//			paramWrapper.setParameterType("Long");
+//			paramWrapper.setParameters(Arrays.asList("fPerson.id"));
+//			paramWrapper.setOperators(Arrays.asList("="));
+//			paramWrapper.setValues(Arrays.asList(omopPersonIdString));
+//			paramWrapper.setRelationship("or");
+//			mapList.add(paramWrapper);
+//			break;
 		case MedicationStatement.SP_SOURCE:
 			ReferenceParam sourceReference = ((ReferenceParam) value);
 			String sourceReferenceId = String.valueOf(sourceReference.getIdPartAsLong());

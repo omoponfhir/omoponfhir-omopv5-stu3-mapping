@@ -195,11 +195,33 @@ public abstract class BaseOmopResource<v extends Resource, t extends BaseEntity,
 		case "Patient:" + Patient.SP_IDENTIFIER:
 			String identifier = value.replace("\"", "");
 			identifier = identifier.replace("'", "");
+
+			// Patient identifier should be token variable separated with |
+			String[] ids = identifier.split("\\|");
+			if (ids.length == 1) {
+				identifier = ids[0].trim();
+			} else {
+				String system = ids[0].trim();
+				String system_value = ids[1].trim();
+				if (system == null || system.isEmpty()) {
+					identifier = system_value;
+				} else {
+					String omopVocabId = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(system);
+					if (!"None".equals(omopVocabId)) {
+						identifier = omopVocabId + "^" + system_value;
+					} else {
+						identifier = system + "^" + system_value;
+					}
+				}
+			}
+			
 			
 			paramWrapper.setParameterType("String");
 			paramWrapper.setParameters(Arrays.asList("fPerson.personSourceValue"));
-			paramWrapper.setOperators(Arrays.asList("like"));
-			paramWrapper.setValues(Arrays.asList("%" + identifier + "%"));
+//			paramWrapper.setOperators(Arrays.asList("like"));
+//			paramWrapper.setValues(Arrays.asList("%" + identifier + "%"));
+			paramWrapper.setOperators(Arrays.asList("="));
+			paramWrapper.setValues(Arrays.asList(identifier));
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;

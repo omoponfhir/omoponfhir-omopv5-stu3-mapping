@@ -22,6 +22,7 @@ import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.MedicationStatement;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -42,6 +43,7 @@ import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.DateParam;
+import ca.uhn.fhir.rest.param.ReferenceOrListParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -83,9 +85,9 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 
 	public OmopMedicationStatement getMyMapper() {
 		return myMapper;
-		
+
 	}
-	
+
 	private Integer getTotalSize(List<ParameterWrapper> paramList) {
 		final Long totalSize;
 		if (paramList.size() == 0) {
@@ -93,26 +95,26 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 		} else {
 			totalSize = getMyMapper().getSize(paramList);
 		}
-		
+
 		return totalSize.intValue();
 	}
 
 	/**
-	 * The "@Create" annotation indicates that this method implements "create=type", which adds a 
-	 * new instance of a resource to the server.
+	 * The "@Create" annotation indicates that this method implements "create=type",
+	 * which adds a new instance of a resource to the server.
 	 */
 	@Create()
 	public MethodOutcome createMedicationStatement(@ResourceParam MedicationStatement theMedicationStatement) {
 		validateResource(theMedicationStatement);
-		
-		Long id=null;
+
+		Long id = null;
 		try {
 			id = myMapper.toDbase(theMedicationStatement, null);
 		} catch (FHIRException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		if (id == null) {
 			OperationOutcome outcome = new OperationOutcome();
 			CodeableConcept detailCode = new CodeableConcept();
@@ -132,10 +134,11 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 	}
 
 	@Update()
-	public MethodOutcome updateMedicationStatement(@IdParam IdType theId, @ResourceParam MedicationStatement theMedicationStatement) {
+	public MethodOutcome updateMedicationStatement(@IdParam IdType theId,
+			@ResourceParam MedicationStatement theMedicationStatement) {
 		validateResource(theMedicationStatement);
-		
-		Long fhirId=null;
+
+		Long fhirId = null;
 		try {
 			fhirId = myMapper.toDbase(theMedicationStatement, theId);
 		} catch (FHIRException e) {
@@ -155,18 +158,17 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 		if (retval == null) {
 			throw new ResourceNotFoundException(theId);
 		}
-			
+
 		return retval;
 	}
 
 	@Search()
 	public IBundleProvider findMedicationStatementsById(
-			@RequiredParam(name = MedicationStatement.SP_RES_ID) TokenParam theMedicationStatementId
-			) {
-		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper> ();
+			@RequiredParam(name = MedicationStatement.SP_RES_ID) TokenParam theMedicationStatementId) {
+		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper>();
 
 		if (theMedicationStatementId != null) {
-			paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_RES_ID, theMedicationStatementId, false));
+			paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_RES_ID, theMedicationStatementId, false));
 		}
 
 		MyBundleProvider myBundleProvider = new MyBundleProvider(paramList);
@@ -174,18 +176,19 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 		myBundleProvider.setPreferredPageSize(preferredPageSize);
 		return myBundleProvider;
 	}
-	
+
 	@Search()
 	public IBundleProvider findMedicationStatementsByParams(
 			@OptionalParam(name = MedicationStatement.SP_CODE) TokenOrListParam theOrCodes,
 			@OptionalParam(name = MedicationStatement.SP_CONTEXT) ReferenceParam theContext,
 			@OptionalParam(name = MedicationStatement.SP_EFFECTIVE) DateParam theDate,
-			@OptionalParam(name = MedicationStatement.SP_PATIENT) ReferenceParam thePatient,
-			@OptionalParam(name = MedicationStatement.SP_SUBJECT) ReferenceParam theSubject,
-			@OptionalParam(name = MedicationStatement.SP_SOURCE) ReferenceParam theSource
-			) {
-		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper> ();
-		
+			@OptionalParam(name = MedicationStatement.SP_PATIENT, chainWhitelist = { "", Patient.SP_NAME,
+					Patient.SP_IDENTIFIER }) ReferenceOrListParam thePatients,
+			@OptionalParam(name = MedicationStatement.SP_SUBJECT, chainWhitelist = { "", Patient.SP_NAME,
+					Patient.SP_IDENTIFIER }) ReferenceOrListParam theSubjects,
+			@OptionalParam(name = MedicationStatement.SP_SOURCE) ReferenceParam theSource) {
+		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper>();
+
 		if (theOrCodes != null) {
 			List<TokenParam> codes = theOrCodes.getValuesAsQueryTokens();
 
@@ -196,42 +199,73 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 					// With this modifier, the code is URI for value set.
 					String valueSetValue = theCode.getValue();
 					if (valueSetValue.split("?").length > 1) {
-						errorProcessing("code:in="+valueSetValue+" is not supported. We only support simple value set URL");
-					} 
+						errorProcessing(
+								"code:in=" + valueSetValue + " is not supported. We only support simple value set URL");
+					}
 				}
-				paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_CODE, theCode, false));
+				paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_CODE, theCode, false));
 
 			} else {
 				for (TokenParam code : codes) {
 					paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_CODE, code, true));
 				}
 			}
-		}		
+		}
 		if (theContext != null) {
-			paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_CONTEXT, theContext, false));
+			paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_CONTEXT, theContext, false));
 		}
+
 		if (theDate != null) {
-			paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_EFFECTIVE, theDate, false));
+			paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_EFFECTIVE, theDate, false));
 		}
-		if (theSubject != null) {
-			if (theSubject.getResourceType().equals(PatientResourceProvider.getType())) {
-				thePatient = theSubject;
-			} else {
-				errorProcessing("subject search allows Only Patient Resource.");
+
+		if (theSubjects != null) {
+			List<ReferenceParam> subjects = theSubjects.getValuesAsQueryTokens();
+			for (ReferenceParam subject : subjects) {
+				if (!subject.getResourceType().equals(PatientResourceProvider.getType())) {
+//					thePatient = theSubject;
+//				} else {
+					errorProcessing("subject search allows Only Patient Resource.");
+				}
 			}
+
+			thePatients = theSubjects;
 		}
-		if (thePatient != null) {
-			paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_PATIENT, thePatient, false));
+
+		if (thePatients != null) {
+			List<ReferenceParam> patients = thePatients.getValuesAsQueryTokens();
+			boolean or = false;
+			if (patients.size() > 1) {
+				or = true;
+			}
+
+			for (ReferenceParam patient : patients) {
+				String patientChain = patient.getChain();
+				if (patientChain != null) {
+					if (Patient.SP_NAME.equals(patientChain)) {
+						String thePatientName = patient.getValue();
+						paramList.addAll(myMapper.mapParameter("Patient:" + Patient.SP_NAME, thePatientName, or));
+					} else if (Patient.SP_IDENTIFIER.equals(patientChain)) {
+						paramList.addAll(myMapper.mapParameter("Patient:" + Patient.SP_IDENTIFIER, patient.getValue(), or));
+					} else if ("".equals(patientChain)) {
+						paramList.addAll(myMapper.mapParameter("Patient:" + Patient.SP_RES_ID, patient.getValue(), or));
+					}
+				} else {
+					paramList.addAll(myMapper.mapParameter("Patient:" + Patient.SP_RES_ID, patient.getIdPart(), or));
+				}
+			}
+
 		}
+
 		if (theSource != null) {
-			paramList.addAll(myMapper.mapParameter (MedicationStatement.SP_SOURCE, theSource, false));
+			paramList.addAll(myMapper.mapParameter(MedicationStatement.SP_SOURCE, theSource, false));
 		}
 
 		MyBundleProvider myBundleProvider = new MyBundleProvider(paramList);
 		myBundleProvider.setTotalSize(getTotalSize(paramList));
 		myBundleProvider.setPreferredPageSize(preferredPageSize);
 		return myBundleProvider;
-		
+
 	}
 
 	@Override
@@ -244,18 +278,19 @@ public class MedicationStatementResourceProvider implements IResourceProvider {
 		CodeableConcept detailCode = new CodeableConcept();
 		detailCode.setText(msg);
 		outcome.addIssue().setSeverity(IssueSeverity.FATAL).setDetails(detailCode);
-		throw new UnprocessableEntityException(FhirContext.forDstu3(), outcome);		
+		throw new UnprocessableEntityException(FhirContext.forDstu3(), outcome);
 	}
-	
+
 	/**
-	 * This method just provides simple business validation for resources we are storing.
+	 * This method just provides simple business validation for resources we are
+	 * storing.
 	 * 
-	 * @param theMedication
-	 *            The medication statement to validate
+	 * @param theMedication The medication statement to validate
 	 */
 	private void validateResource(MedicationStatement theMedication) {
 		/*
-		 * Our server will have a rule that patients must have a family name or we will reject them
+		 * Our server will have a rule that patients must have a family name or we will
+		 * reject them
 		 */
 //		if (thePatient.getNameFirstRep().getFamily().isEmpty()) {
 //			OperationOutcome outcome = new OperationOutcome();

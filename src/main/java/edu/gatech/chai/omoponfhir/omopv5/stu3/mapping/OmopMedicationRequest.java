@@ -28,6 +28,7 @@ import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.Medication.MedicationIngredientComponent;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestDispenseRequestComponent;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
@@ -36,6 +37,7 @@ import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Type;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -135,6 +137,31 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 		}
 		
 		return IdMapping.getFHIRfromOMOP(retOmopId, MedicationStatementResourceProvider.getType());
+	}
+	
+	@Override
+	public MedicationRequest constructResource(Long fhirId, DrugExposure entity, List<String> includes) {
+		MedicationRequest fhirResource = constructFHIR(fhirId, entity);
+
+		if (!includes.isEmpty()) {
+			if (includes.contains("MedicationRequest:medication")) {
+				Type medicationType = fhirResource.getMedication();
+				if (medicationType instanceof Reference) {
+					// We can include the medication resource as this is reference.
+					// If medication is codeable concept, we can't include medication as
+					// it does not have reference.
+					Reference medicationReference = fhirResource.getMedicationReference();
+					if (medicationReference != null && !medicationReference.isEmpty()) {
+						IIdType medicationId = medicationReference.getReferenceElement();
+						Long medicationFhirId = medicationId.getIdPartAsLong();
+						Medication medication = OmopMedication.getInstance().constructFHIR(medicationFhirId, entity.getDrugConcept());
+						medicationReference.setResource(medication);
+					}
+				}
+			}
+		}
+		
+		return fhirResource;
 	}
 
 	@Override
@@ -383,20 +410,29 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
-		case MedicationRequest.SP_PATIENT:
-		case MedicationRequest.SP_SUBJECT:
-			ReferenceParam patientReference = ((ReferenceParam) value);
-			Long fhirPatientId = patientReference.getIdPartAsLong();
-			Long omopPersonId = IdMapping.getOMOPfromFHIR(fhirPatientId, PatientResourceProvider.getType());
-
-			String omopPersonIdString = String.valueOf(omopPersonId);
-			
-			paramWrapper.setParameterType("Long");
-			paramWrapper.setParameters(Arrays.asList("fPerson.id"));
-			paramWrapper.setOperators(Arrays.asList("="));
-			paramWrapper.setValues(Arrays.asList(omopPersonIdString));
-			paramWrapper.setRelationship("or");
-			mapList.add(paramWrapper);
+//		case MedicationRequest.SP_PATIENT:
+//		case MedicationRequest.SP_SUBJECT:
+//			ReferenceParam patientReference = ((ReferenceParam) value);
+//			Long fhirPatientId = patientReference.getIdPartAsLong();
+//			Long omopPersonId = IdMapping.getOMOPfromFHIR(fhirPatientId, PatientResourceProvider.getType());
+//
+//			String omopPersonIdString = String.valueOf(omopPersonId);
+//			
+//			paramWrapper.setParameterType("Long");
+//			paramWrapper.setParameters(Arrays.asList("fPerson.id"));
+//			paramWrapper.setOperators(Arrays.asList("="));
+//			paramWrapper.setValues(Arrays.asList(omopPersonIdString));
+//			paramWrapper.setRelationship("or");
+//			mapList.add(paramWrapper);
+//			break;
+		case "Patient:" + Patient.SP_RES_ID:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
+			break;
+		case "Patient:" + Patient.SP_NAME:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
+			break;
+		case "Patient:" + Patient.SP_IDENTIFIER:
+			addParamlistForPatientIDName(parameter, (String) value, paramWrapper, mapList);
 			break;
 		case "Medication:"+Medication.SP_RES_ID:
 			String pId = (String) value;
