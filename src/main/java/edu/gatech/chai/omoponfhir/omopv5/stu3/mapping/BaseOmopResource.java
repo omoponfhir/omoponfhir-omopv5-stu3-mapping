@@ -18,19 +18,28 @@ package edu.gatech.chai.omoponfhir.omopv5.stu3.mapping;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.rest.api.SortSpec;
 import edu.gatech.chai.omoponfhir.local.dao.FhirOmopCodeMapImpl;
 import edu.gatech.chai.omoponfhir.local.dao.FhirOmopVocabularyMapImpl;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omopv5.dba.service.ConceptService;
 import edu.gatech.chai.omopv5.dba.service.IService;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
+import edu.gatech.chai.omopv5.dba.service.VisitOccurrenceService;
 import edu.gatech.chai.omopv5.model.entity.BaseEntity;
+import edu.gatech.chai.omopv5.model.entity.Concept;
+import edu.gatech.chai.omopv5.model.entity.VisitOccurrence;
 
 public abstract class BaseOmopResource<v extends Resource, t extends BaseEntity, p extends IService<t>>
 		implements IResourceMapping<v, t> {
@@ -239,5 +248,95 @@ public abstract class BaseOmopResource<v extends Resource, t extends BaseEntity,
 		String orderParam = "id " + direction;
 		
 		return orderParam;
+	}
+	
+	public Concept fhirCode2OmopConcept(ConceptService conceptService, CodeableConcept code, String valueSourceString) {
+		List<Coding> codings = code.getCoding();
+		Coding codingFound = null;
+		Coding codingSecondChoice = null;
+		String omopSystem = null;
+		for (Coding coding : codings) {
+			String fhirSystemUri = coding.getSystem();
+			// We prefer LOINC code. So, if we found one, we break out from
+			// this loop
+			if (code.getText() != null && !code.getText().isEmpty()) {
+				valueSourceString = code.getText();
+			} else {
+				valueSourceString = coding.getSystem() + " " + coding.getCode() + " " + coding.getDisplay();
+				valueSourceString = valueSourceString.trim();
+			}
+
+			if (fhirSystemUri != null && fhirSystemUri.equals(OmopCodeableConceptMapping.LOINC.getFhirUri())) {
+				// Found the code we want.
+				codingFound = coding;
+				break;
+			} else {
+				// See if we can handle this coding.
+				try {
+					if (fhirSystemUri != null && !fhirSystemUri.isEmpty()) {
+						omopSystem = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(fhirSystemUri);
+
+						if ("None".equals(omopSystem) == false) {
+							// We can at least handle this. Save it
+							// We may find another one we can handle. Let it replace.
+							// 2nd choice is just 2nd choice.
+							codingSecondChoice = coding;
+						}
+					}
+				} catch (FHIRException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		Concept concept = null;
+		if (codingFound != null) {
+			// Find the concept id for this coding.
+			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService,
+					OmopCodeableConceptMapping.LOINC.getOmopVocabulary(), codingFound.getCode());
+		} else if (codingSecondChoice != null) {
+			// This is not our first choice. But, found one that we can
+			// map.
+			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, omopSystem,
+					codingSecondChoice.getCode());
+		} else {
+			concept = null;
+		}
+
+		if (concept == null) {
+			concept = conceptService.findById(0L);
+		}
+		
+		return concept;
+	}
+	
+	public VisitOccurrence fhirContext2OmopVisitOccurrence(VisitOccurrenceService visitOccurrenceService, Reference contextReference) {
+		VisitOccurrence visitOccurrence = null;
+		if (contextReference != null && !contextReference.isEmpty()) {
+			if (contextReference.getReferenceElement().getResourceType().equals(EncounterResourceProvider.getType())) {
+				// Encounter context.
+				Long fhirEncounterId = contextReference.getReferenceElement().getIdPartAsLong();
+				Long omopVisitOccurrenceId = IdMapping.getOMOPfromFHIR(fhirEncounterId,
+						EncounterResourceProvider.getType());
+				if (omopVisitOccurrenceId != null) {
+					visitOccurrence = visitOccurrenceService.findById(omopVisitOccurrenceId);
+				}
+				if (visitOccurrence == null) {
+					try {
+						throw new FHIRException(
+								"The Encounter (" + contextReference.getReference() + ") context couldn't be found.");
+					} catch (FHIRException e) {
+						e.printStackTrace();
+					}
+				} else {
+					return visitOccurrence;
+				}
+			} else {
+				// Episode of Care context.
+				// TODO: Do we have a mapping for the Episode of Care??
+			}
+		}
+		
+		return visitOccurrence;
 	}
 }

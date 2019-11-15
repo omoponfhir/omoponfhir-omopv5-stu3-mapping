@@ -291,7 +291,7 @@ public class OmopPractitioner extends BaseOmopResource<Practitioner, Provider, P
 			try {
 				genderLongCode = OmopConceptMapping.omopForAdministrativeGenderCode(genderValue);
 			} catch (FHIRException e) {
-				genderLongCode = OmopConceptMapping.NULL.omopConceptId;
+				genderLongCode = OmopConceptMapping.ADMIN_NULL.getOmopConceptId();
 			}
 			paramWrapper.setParameterType("Long");
 			paramWrapper.setParameters(Arrays.asList("gender_source_concept_id", "gender_source_value"));

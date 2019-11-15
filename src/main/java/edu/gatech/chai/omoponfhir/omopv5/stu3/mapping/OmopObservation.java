@@ -84,7 +84,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 	public static final long DIASTOLIC_CONCEPT_ID = 3012888L;
 	public static final String SYSTOLIC_LOINC_CODE = "8480-6";
 	public static final String DIASTOLIC_LOINC_CODE = "8462-4";
-	public static final String BP_SYSTOLIC_DIASTOLIC_CODE = "85354-9";
+	public static final String BP_SYSTOLIC_DIASTOLIC_CODE = "55284-4";
 	public static final String BP_SYSTOLIC_DIASTOLIC_DISPLAY = "Blood pressure systolic & diastolic";
 
 	private ConceptService conceptService;
@@ -1003,84 +1003,85 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 
 		// Get code system information.
 		CodeableConcept code = fhirResource.getCode();
-
-		// code should NOT be null as this is required field.
-		// And, validation should check this.
-		List<Coding> codings = code.getCoding();
-		Coding codingFound = null;
-		Coding codingSecondChoice = null;
-		String omopSystem = null;
+//
+//		// code should NOT be null as this is required field.
+//		// And, validation should check this.
+//		List<Coding> codings = code.getCoding();
+//		Coding codingFound = null;
+//		Coding codingSecondChoice = null;
+//		String omopSystem = null;
+//		String valueSourceString = null;
+//		for (Coding coding : codings) {
+//			String fhirSystemUri = coding.getSystem();
+//			// We prefer LOINC code. So, if we found one, we break out from
+//			// this loop
+//			if (code.getText() != null && !code.getText().isEmpty()) {
+//				valueSourceString = code.getText();
+//			} else {
+//				valueSourceString = coding.getSystem() + " " + coding.getCode() + " " + coding.getDisplay();
+//				valueSourceString = valueSourceString.trim();
+//			}
+//
+//			if (fhirSystemUri != null && fhirSystemUri.equals(OmopCodeableConceptMapping.LOINC.getFhirUri())) {
+//				// Found the code we want.
+//				codingFound = coding;
+//				break;
+//			} else {
+//				// See if we can handle this coding.
+//				try {
+//					if (fhirSystemUri != null && !fhirSystemUri.isEmpty()) {
+////						omopSystem = OmopCodeableConceptMapping.omopVocabularyforFhirUri(fhirSystemUri);
+//						omopSystem = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(fhirSystemUri);
+//
+//						if ("None".equals(omopSystem) == false) {
+//							// We can at least handle this. Save it
+//							// We may find another one we can handle. Let it replace.
+//							// 2nd choice is just 2nd choice.
+//							codingSecondChoice = coding;
+//						}
+//					}
+//				} catch (FHIRException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//		// if (codingFound == null && codingSecondChoice == null) {
+//		// try {
+//		// throw new FHIRException("We couldn't support the code");
+//		// } catch (FHIRException e) {
+//		// e.printStackTrace();
+//		// }
+//		// }
+//
+//		Concept concept = null;
+//		if (codingFound != null) {
+//			// Find the concept id for this coding.
+//			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService,
+//					OmopCodeableConceptMapping.LOINC.getOmopVocabulary(), codingFound.getCode());
+////				if (concept == null) {
+////					throw new FHIRException("We couldn't map the code - "
+////							+ OmopCodeableConceptMapping.LOINC.getFhirUri() + ":" + codingFound.getCode());
+////				}
+//		} else if (codingSecondChoice != null) {
+//			// This is not our first choice. But, found one that we can
+//			// map.
+//			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, omopSystem,
+//					codingSecondChoice.getCode());
+////				if (concept == null) {
+////					throw new FHIRException("We couldn't map the code - "
+////							+ OmopCodeableConceptMapping.fhirUriforOmopVocabulary(omopSystem) + ":"
+////							+ codingSecondChoice.getCode());
+////				}
+//		} else {
+//			concept = null;
+//		}
+//
+//		if (concept == null) {
+//			concept = conceptService.findById(0L);
+//		}
 		String valueSourceString = null;
-		for (Coding coding : codings) {
-			String fhirSystemUri = coding.getSystem();
-			// We prefer LOINC code. So, if we found one, we break out from
-			// this loop
-			if (code.getText() != null && !code.getText().isEmpty()) {
-				valueSourceString = code.getText();
-			} else {
-				valueSourceString = coding.getSystem() + " " + coding.getCode() + " " + coding.getDisplay();
-				valueSourceString = valueSourceString.trim();
-			}
-
-			if (fhirSystemUri != null && fhirSystemUri.equals(OmopCodeableConceptMapping.LOINC.getFhirUri())) {
-				// Found the code we want.
-				codingFound = coding;
-				break;
-			} else {
-				// See if we can handle this coding.
-				try {
-					if (fhirSystemUri != null && !fhirSystemUri.isEmpty()) {
-//						omopSystem = OmopCodeableConceptMapping.omopVocabularyforFhirUri(fhirSystemUri);
-						omopSystem = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(fhirSystemUri);
-
-						if ("None".equals(omopSystem) == false) {
-							// We can at least handle this. Save it
-							// We may find another one we can handle. Let it replace.
-							// 2nd choice is just 2nd choice.
-							codingSecondChoice = coding;
-						}
-					}
-				} catch (FHIRException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		// if (codingFound == null && codingSecondChoice == null) {
-		// try {
-		// throw new FHIRException("We couldn't support the code");
-		// } catch (FHIRException e) {
-		// e.printStackTrace();
-		// }
-		// }
-
-		Concept concept = null;
-		if (codingFound != null) {
-			// Find the concept id for this coding.
-			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService,
-					OmopCodeableConceptMapping.LOINC.getOmopVocabulary(), codingFound.getCode());
-//				if (concept == null) {
-//					throw new FHIRException("We couldn't map the code - "
-//							+ OmopCodeableConceptMapping.LOINC.getFhirUri() + ":" + codingFound.getCode());
-//				}
-		} else if (codingSecondChoice != null) {
-			// This is not our first choice. But, found one that we can
-			// map.
-			concept = CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, omopSystem,
-					codingSecondChoice.getCode());
-//				if (concept == null) {
-//					throw new FHIRException("We couldn't map the code - "
-//							+ OmopCodeableConceptMapping.fhirUriforOmopVocabulary(omopSystem) + ":"
-//							+ codingSecondChoice.getCode());
-//				}
-		} else {
-			concept = null;
-		}
-
-		if (concept == null) {
-			concept = conceptService.findById(0L);
-		}
-
+		Concept concept = fhirCode2OmopConcept(conceptService, code, valueSourceString);
 		measurement.setMeasurementConcept(concept);
 
 		// Set this in the source column
@@ -1093,6 +1094,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 
 		/* Set the value of the observation */
 		Type valueType = fhirResource.getValue();
+		List<Coding> codings;
 		try {
 			if (valueType instanceof Quantity) {
 				measurement.setValueAsNumber(((Quantity) valueType).getValue().doubleValue());
@@ -1241,31 +1243,36 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		}
 		/* Set visit occurrence */
 		Reference contextReference = fhirResource.getContext();
-		VisitOccurrence visitOccurrence = null;
-		if (contextReference != null && !contextReference.isEmpty()) {
-			if (contextReference.getReferenceElement().getResourceType().equals(EncounterResourceProvider.getType())) {
-				// Encounter context.
-				Long fhirEncounterId = contextReference.getReferenceElement().getIdPartAsLong();
-				Long omopVisitOccurrenceId = IdMapping.getOMOPfromFHIR(fhirEncounterId,
-						EncounterResourceProvider.getType());
-				if (omopVisitOccurrenceId != null) {
-					visitOccurrence = visitOccurrenceService.findById(omopVisitOccurrenceId);
-				}
-				if (visitOccurrence == null) {
-					try {
-						throw new FHIRException(
-								"The Encounter (" + contextReference.getReference() + ") context couldn't be found.");
-					} catch (FHIRException e) {
-						e.printStackTrace();
-					}
-				} else {
-					measurement.setVisitOccurrence(visitOccurrence);
-				}
-			} else {
-				// Episode of Care context.
-				// TODO: Do we have a mapping for the Episode of Care??
-			}
+		VisitOccurrence visitOccurrence = fhirContext2OmopVisitOccurrence(visitOccurrenceService, contextReference);
+		if (visitOccurrence != null) {
+			measurement.setVisitOccurrence(visitOccurrence);
 		}
+//		
+//		VisitOccurrence visitOccurrence = null;
+//		if (contextReference != null && !contextReference.isEmpty()) {
+//			if (contextReference.getReferenceElement().getResourceType().equals(EncounterResourceProvider.getType())) {
+//				// Encounter context.
+//				Long fhirEncounterId = contextReference.getReferenceElement().getIdPartAsLong();
+//				Long omopVisitOccurrenceId = IdMapping.getOMOPfromFHIR(fhirEncounterId,
+//						EncounterResourceProvider.getType());
+//				if (omopVisitOccurrenceId != null) {
+//					visitOccurrence = visitOccurrenceService.findById(omopVisitOccurrenceId);
+//				}
+//				if (visitOccurrence == null) {
+//					try {
+//						throw new FHIRException(
+//								"The Encounter (" + contextReference.getReference() + ") context couldn't be found.");
+//					} catch (FHIRException e) {
+//						e.printStackTrace();
+//					}
+//				} else {
+//					measurement.setVisitOccurrence(visitOccurrence);
+//				}
+//			} else {
+//				// Episode of Care context.
+//				// TODO: Do we have a mapping for the Episode of Care??
+//			}
+//		}
 
 		List<CodeableConcept> categories = fhirResource.getCategory();
 		Long typeConceptId = 0L;

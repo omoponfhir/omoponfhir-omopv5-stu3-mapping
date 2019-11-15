@@ -51,12 +51,12 @@ import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.param.TokenParamModifier;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.TerminologyServiceClient;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationRequestResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationStatementResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PractitionerResourceProvider;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.TerminologyServiceClient;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.ThrowFHIRExceptions;
 import edu.gatech.chai.omopv5.dba.service.ConceptService;
 import edu.gatech.chai.omopv5.dba.service.DrugExposureService;
@@ -166,6 +166,9 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 			medicationStatement.setStatus(MedicationStatementStatus.STOPPED);
 			Annotation annotation = new Annotation();
 			annotation.setText(entity.getStopReason());
+			medicationStatement.addNote(annotation);
+		} else {
+			medicationStatement.setStatus(MedicationStatementStatus.ACTIVE);
 		}
 
 		FPerson fPerson = entity.getFPerson();
@@ -699,7 +702,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 		}
 
 		MedicationStatementStatus status = fhirResource.getStatus();
-		if (status.equals(MedicationStatementStatus.STOPPED)) {
+		if (status != null && status.equals(MedicationStatementStatus.STOPPED)) {
 			// This medication is stopped. See if we have a reason stopped.
 			List<CodeableConcept> reasonNotTakens = fhirResource.getReasonNotTaken();
 			String reasonsForStopped = "";
@@ -947,12 +950,11 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 			}
 		}
 		
-		if (drugTypeConcept != null) {
-			drugExposure.setDrugTypeConcept(drugTypeConcept);
-		} else {
+		if (drugTypeConcept == null) {
 			drugTypeConcept = new Concept();
 			drugTypeConcept.setId(MEDICATIONSTATEMENT_CONCEPT_TYPE_ID);
 		}
+		drugExposure.setDrugTypeConcept(drugTypeConcept);
 
 		return drugExposure;
 	}

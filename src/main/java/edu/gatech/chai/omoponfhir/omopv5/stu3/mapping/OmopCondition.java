@@ -20,6 +20,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.mapping.IdMapping;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.ConditionResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
@@ -104,10 +105,16 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 	@Override
 	public Long toDbase(Condition fhirResource, IdType fhirId) throws FHIRException {
 		Long retval;
-		Long omopId = null;
+		Long omopId = null, fhirIdLong = null;
 
 		if (fhirId != null) {
-			omopId = IdMapping.getOMOPfromFHIR(fhirId.getIdPartAsLong(), ConditionResourceProvider.getType());
+			fhirIdLong = fhirId.getIdPartAsLong();
+			if (fhirIdLong == null) {
+				logger.error("Failed to get Condition.id as Long Value");
+				return null;
+			}
+			
+			omopId = IdMapping.getOMOPfromFHIR(fhirIdLong, ConditionResourceProvider.getType());
 		}
 
 		ConditionOccurrence conditionOccurrence = constructOmop(omopId, fhirResource);
@@ -120,7 +127,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			retval = conditionOccurrenceService.create(conditionOccurrence).getId();
 		}
 
-		return IdMapping.getFHIRfromOMOP(retval, getMyFhirResourceType());
+		return IdMapping.getFHIRfromOMOP(retval, ConditionResourceProvider.getType());
 	}
 
 	public List<ParameterWrapper> mapParameter(String parameter, Object value, boolean or) {
@@ -409,7 +416,6 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		ConditionOccurrence conditionOccurrence;
 		FPerson fPerson;
 		Provider provider;
-		VisitOccurrence visitOccurrence;
 
 		// check for an existing condition
 		if (omopId != null) {
@@ -423,6 +429,14 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			Long subjectId = fhirResource.getSubject().getReferenceElement().getIdPartAsLong();
 			Long subjectFhirId = IdMapping.getOMOPfromFHIR(subjectId, PatientResourceProvider.getType());
 			fPerson = fPersonService.findById(subjectFhirId);
+			if (fPerson == null) {
+				try {
+					throw new FHIRException("Could not get Person class.");
+				} catch (FHIRException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			conditionOccurrence.setFPerson(fPerson);
 		} else {
 			// throw an error
@@ -442,51 +456,47 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			if (provider != null) {
 				conditionOccurrence.setProvider(provider);
 			}
-		} else {
-			// else create provider
-			try {
-				throw new FHIRException("FHIR Resource does not contain a Provider.");
-			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 
 		// get the concept code
-		if (fhirResource.getCode() != null) {
-			List<Coding> codes = fhirResource.getCode().getCoding();
-			Concept omopConcept;
-			// there is only one so get the first
-			try {
-				omopConcept = CodeableConceptUtil.getOmopConceptWithFhirConcept(conceptService, codes.get(0));
-				// set the concept
-				conditionOccurrence.setConceptId(omopConcept);
-			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			// is there a generic condition concept to use?
-			try {
-				throw new FHIRException("FHIR Resource does not contain a Condition Code.");
-			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		CodeableConcept code = fhirResource.getCode();
+		String valueSourceString = null;
+		Concept concept = fhirCode2OmopConcept(conceptService, code, valueSourceString);
+		conditionOccurrence.setConceptId(concept);
 
+//		if (code != null) {
+//			List<Coding> codes = code.getCoding();
+//			Concept omopConcept;
+//			// there is only one so get the first
+//			try {
+//				omopConcept = CodeableConceptUtil.getOmopConceptWithFhirConcept(conceptService, codes.get(0));
+//				// set the concept
+//				conditionOccurrence.setConceptId(omopConcept);
+//			} catch (FHIRException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		} else {
+//			// is there a generic condition concept to use?
+//			try {
+//				throw new FHIRException("FHIR Resource does not contain a Condition Code.");
+//			} catch (FHIRException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+		
 		// get the start and end date. We are expecting both to be of type DateTimeType
-		if (fhirResource.getOnset() != null && fhirResource.getOnset() instanceof DateTimeType) {
+		Type onSet = fhirResource.getOnset();
+		if (onSet != null && onSet instanceof DateTimeType) {
 			conditionOccurrence.setStartDate(((DateTimeType) fhirResource.getOnset()).toCalendar().getTime());
-		} else {
-			// create a start date
-			try {
-				throw new FHIRException("FHIR Resource does not contain a start date.");
-			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		} if (onSet != null && onSet instanceof Period) {
+			Period period = (Period)onSet;
+			Date start = period.getStart();
+			Date end = period.getEnd();
+			if (start != null) conditionOccurrence.setStartDate(start);
+			if (end != null) conditionOccurrence.setEndDate(end);
+		} 
 
 		if (fhirResource.getAbatement() != null && fhirResource.getAbatement() instanceof DateTimeType) {
 			conditionOccurrence.setEndDate(((DateTimeType) fhirResource.getAbatement()).toCalendar().getTime());
@@ -494,35 +504,40 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			// leave alone, end date not required
 		}
 
-		// set the conditions
-		if (fhirResource.getCategory() != null) {
-			List<CodeableConcept> categories = fhirResource.getCategory();
-			Concept omopTypeConcept;
-			// there is only one so get the first
-			try {
-				omopTypeConcept = CodeableConceptUtil.getOmopConceptWithFhirConcept(conceptService,
-						categories.get(0).getCodingFirstRep());
-				conditionOccurrence.setTypeConceptId(omopTypeConcept);
-			} catch (FHIRException e) {
-				e.printStackTrace();
+		// set the category
+		List<CodeableConcept> categories = fhirResource.getCategory();
+		Long typeConceptId = 0L;
+		for (CodeableConcept category : categories) {
+			List<Coding> codings = category.getCoding();
+			for (Coding coding : codings) {
+				String fhirSystem = coding.getSystem();
+				String fhirCode = coding.getCode();
+				if (fhirSystem == null || fhirSystem.isEmpty() || fhirCode == null || fhirCode.isEmpty()) {
+					continue;
+				}
+				try {
+					typeConceptId = OmopConceptMapping.omopForConditionCategoryCode(fhirCode);
+				} catch (FHIRException e) {
+					e.printStackTrace();
+				}
+				if (typeConceptId > 0L)
+					break;
 			}
-		} else {
-			// is there a generic condition type concept to use?
-			try {
-				throw new FHIRException("FHIR Resource does not contain a Condition category.");
-			} catch (FHIRException e) {
-				e.printStackTrace();
-			}
+			if (typeConceptId > 0L)
+				break;
 		}
+
+		concept = conceptService.findById(typeConceptId);
+		conditionOccurrence.setTypeConceptId(concept);
 
 		// set the context
-		if (fhirResource.getContext() != null) {
-			Long visitId = fhirResource.getContext().getReferenceElement().getIdPartAsLong();
-			Long visitFhirId = IdMapping.getOMOPfromFHIR(visitId, EncounterResourceProvider.getType());
-			visitOccurrence = visitOccurrenceService.findById(visitFhirId);
+		/* Set visit occurrence */
+		Reference contextReference = fhirResource.getContext();
+		VisitOccurrence visitOccurrence = fhirContext2OmopVisitOccurrence(visitOccurrenceService, contextReference);
+		if (visitOccurrence != null) {
 			conditionOccurrence.setVisitOccurrence(visitOccurrence);
 		}
-
+		
 		return conditionOccurrence;
 	}
 }

@@ -43,6 +43,8 @@ import org.hl7.fhir.dstu3.model.codesystems.V3MaritalStatus;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -73,6 +75,8 @@ import edu.gatech.chai.omopv5.model.entity.VisitOccurrence;
 
 public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPersonService>
 		implements IResourceMapping<USCorePatient, FPerson> {
+
+	private static final Logger logger = LoggerFactory.getLogger(OmopPatient.class);
 
 	private static OmopPatient omopPatient = new OmopPatient();
 
@@ -440,15 +444,18 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 	 */
 	@Override
 	public Long toDbase(USCorePatient patient, IdType fhirId) throws FHIRException {
-		Long omopId = null;
+		Long omopId = null, fhirIdLong = null;
 
 		if (fhirId != null) {
 			// update
-			omopId = fhirId.getIdPartAsLong();
-			if (omopId == null) {
+			fhirIdLong = fhirId.getIdPartAsLong();
+			if (fhirIdLong == null) {
 				// Invalid fhirId.
+				logger.error("Failed to get Patient.id as Long value");
 				return null;
 			}
+			
+			omopId = IdMapping.getOMOPfromFHIR(fhirIdLong, PatientResourceProvider.getType());
 		}
 
 		FPerson fperson = constructOmop(omopId, patient);
