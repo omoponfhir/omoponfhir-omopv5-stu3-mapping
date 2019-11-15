@@ -803,7 +803,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 
 		// Effective Time.
 		Type effective = fhirResource.getEffective();
-		if (!effective.isEmpty()) {
+		if (effective != null && !effective.isEmpty()) {
 			if (effective instanceof DateTimeType) {
 				// In OMOP on FHIR, we do Period. But,
 				// if DateTime is provided, we set start time.
