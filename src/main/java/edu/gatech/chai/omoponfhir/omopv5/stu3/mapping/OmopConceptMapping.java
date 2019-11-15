@@ -212,6 +212,17 @@ public enum OmopConceptMapping {
 		return ENC_NULL.getOmopConceptId();
 	}
 	
+	public static String fhirForConditionTypeConcept(Long conditionTypeConceptId) {
+		if (PROBLEM_LIST_ITEM.getOmopConceptId() == conditionTypeConceptId) {
+			return PROBLEM_LIST_ITEM.getFhirCode();
+		}
+		if (ENCOUNTER_DIAGNOSIS.getOmopConceptId() == conditionTypeConceptId) {
+			return ENCOUNTER_DIAGNOSIS.getFhirCode();
+		} 
+		
+		return COND_NULL.getFhirCode();
+	}
+	
 	String fhirCode;
 	Long omopConceptId;
 

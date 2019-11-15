@@ -29,6 +29,7 @@ import edu.gatech.chai.omopv5.dba.service.*;
 import edu.gatech.chai.omopv5.model.entity.*;
 
 import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.dstu3.model.codesystems.ConditionCategory;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -380,12 +381,29 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		// Condition.category
 		Concept typeConceptId = conditionOccurrence.getTypeConceptId();
 		if (typeConceptId != null) {
-			CodeableConcept typeCodeableConcept = retrieveCodeableConcept(typeConceptId);
-			if (typeCodeableConcept != null) {
-				List<CodeableConcept> typeList = new ArrayList<CodeableConcept>();
-				typeList.add(typeCodeableConcept);
-				condition.setCategory(typeList);
+			String systemUri = ConditionCategory.PROBLEMLISTITEM.getSystem();
+			String code = null;
+			
+			String fhirCategoryCode = OmopConceptMapping.fhirForConditionTypeConcept(typeConceptId.getId());
+			if (OmopConceptMapping.COND_NULL.fhirCode.equals(fhirCategoryCode)) {
+				// We couldn't fine one. Default to problem-list
+				code = ConditionCategory.PROBLEMLISTITEM.toCode(); // default
+			} else {
+				code = fhirCategoryCode;
 			}
+			
+//			CodeableConcept typeCodeableConcept = retrieveCodeableConcept(typeConceptId);
+			Coding typeCoding = new Coding();
+			typeCoding.setSystem(systemUri);
+			typeCoding.setCode(code);
+			CodeableConcept typeCodeableConcept = new CodeableConcept();
+			typeCodeableConcept.addCoding(typeCoding);
+			condition.addCategory(typeCodeableConcept);
+//			if (typeCodeableConcept != null) {
+//				List<CodeableConcept> typeList = new ArrayList<CodeableConcept>();
+//				typeList.add(typeCodeableConcept);
+//				condition.setCategory(typeList);
+//			}
 		}
 	}
 
