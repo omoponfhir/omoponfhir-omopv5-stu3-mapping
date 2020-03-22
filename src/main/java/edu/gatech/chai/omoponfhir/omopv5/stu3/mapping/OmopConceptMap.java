@@ -44,6 +44,10 @@ public class OmopConceptMap extends BaseOmopResource<ConceptMap, ConceptRelation
 	
 	private void initialize(WebApplicationContext context) {
 		conceptService = context.getBean(ConceptService.class);		
+		
+		// Get count and put it in the counts. 
+		// We haven't created read here yet. So, do not get counts.
+		// getSize();
 	}
 	
 	@Override

@@ -10,6 +10,7 @@ import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.ConceptMap;
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Parameters;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.UriType;
@@ -27,8 +28,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Operation;
 import ca.uhn.fhir.rest.annotation.OperationParam;
+import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.mapping.OmopConceptMap;
@@ -72,6 +75,11 @@ public class ConceptMapResourceProvider implements IResourceProvider {
 
 	public void setFhirContext(FhirContext fhirContext) {
 		this.fhirContext = fhirContext;
+	}
+
+	@Read()
+	public ConceptMap readConceptMap(@IdParam IdType theId) {
+		return null;
 	}
 
 	/**

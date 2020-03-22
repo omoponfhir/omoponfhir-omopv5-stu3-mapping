@@ -88,10 +88,10 @@ public class MedicationResourceProvider implements IResourceProvider {
 		return totalSize.intValue();
 	}
 
-	@Delete()
-	public void deleteMedication(@IdParam IdType theId) {
-		throw new MethodNotAllowedException("Medication Delete is not Allowed.");
-	}
+//	@Delete()
+//	public void deleteMedication(@IdParam IdType theId) {
+//		throw new MethodNotAllowedException("Medication Delete is not Allowed.");
+//	}
 
 	@Read()
 	public Medication readMedication(@IdParam IdType theId) {

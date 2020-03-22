@@ -53,6 +53,7 @@ import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.ExtensionUtil;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.ObservationResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
@@ -113,6 +114,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		visitOccurrenceService = context.getBean(VisitOccurrenceService.class);
 		noteService = context.getBean(NoteService.class);
 		factRelationshipService = context.getBean(FactRelationshipService.class);
+		
+		// Get count and put it in the counts.
+		getSize();
 	}
 
 	public Long getDiastolicConcept() {
@@ -2028,7 +2032,11 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 	@Override
 	public Long getSize() {
 		List<ParameterWrapper> mapList = new ArrayList<ParameterWrapper>();
-		return getSize(mapList);
+		
+		Long size = getSize(mapList);
+		ExtensionUtil.addResourceCount(ObservationResourceProvider.getType(), size);
+		
+		return size;
 		// mapList.add(exceptionParam);
 		//
 		// return measurementService.getSize() -

@@ -64,6 +64,10 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 		// Get bean for other service(s) for mapping.
 		locationService = context.getBean(LocationService.class);
 		vocabularyService = context.getBean(VocabularyService.class);
+		
+		// Get count and put it in the counts.
+		getSize();
+
 	}
 	
 	public static OmopOrganization getInstance() {

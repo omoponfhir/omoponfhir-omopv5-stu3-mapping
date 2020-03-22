@@ -79,6 +79,9 @@ public class OmopDeviceUseStatement extends BaseOmopResource<MyDeviceUseStatemen
 		conceptService = context.getBean(ConceptService.class);
 		fPersonService = context.getBean(FPersonService.class);
 		providerService = context.getBean(ProviderService.class);
+		
+		// Get count and put it in the counts.
+		getSize();
 	}
 	
 	public static OmopDeviceUseStatement getInstance() {

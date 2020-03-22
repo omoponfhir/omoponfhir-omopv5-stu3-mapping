@@ -110,6 +110,10 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 		providerService = context.getBean(ProviderService.class);
 		visitOccurrenceService = context.getBean(VisitOccurrenceService.class);
 		conceptService = context.getBean(ConceptService.class);
+		
+		// Get count and put it in the counts.
+		getSize();
+
 	}
 
 	public static OmopPatient getInstance() {

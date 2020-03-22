@@ -46,6 +46,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.ExtensionUtil;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationRequestResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationResourceProvider;
@@ -113,6 +114,9 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 		conceptService = context.getBean(ConceptService.class);
 		providerService = context.getBean(ProviderService.class);
 		fPersonService = context.getBean(FPersonService.class);
+		
+		// Get count and put it in the counts.
+		getSize();
 	}
 
 	public static OmopMedicationRequest getInstance() {
@@ -462,7 +466,11 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 	public Long getSize() {
 		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper> ();
 		// call getSize with empty parameter list. The getSize will add filter parameter.
-		return getSize(paramList);
+
+		Long size = getSize(paramList);
+		ExtensionUtil.addResourceCount(MedicationRequestResourceProvider.getType(), size);
+		
+		return size;
 	}
 
 	@Override

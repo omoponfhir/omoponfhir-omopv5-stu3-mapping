@@ -30,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.ExtensionUtil;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationResourceProvider;
 import edu.gatech.chai.omopv5.dba.service.ConceptService;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
@@ -53,6 +54,8 @@ public class OmopMedication extends BaseOmopResource<Medication, Concept, Concep
 	}
 	
 	private void initialize(WebApplicationContext context) {
+		// Get count and put it in the counts.
+		getSize();
 	}
 
 	
@@ -170,14 +173,20 @@ public class OmopMedication extends BaseOmopResource<Medication, Concept, Concep
 	@Override
 	public Long getSize() {
 		List<ParameterWrapper> paramList = new ArrayList<ParameterWrapper> ();
-		return getSize(paramList);
+
+		Long size = getSize(paramList);
+		
+		// update the counts map.
+		ExtensionUtil.addResourceCount(MedicationResourceProvider.getType(), size);
+		
+		return size;
 	}
 
 	@Override
 	public Long getSize(List<ParameterWrapper> paramList) {
 		paramList.add(filterParam);
 
-		return getMyOmopService().getSize(paramList);
+		return getMyOmopService().getSize(paramList); 		
 	}
 
 	@Override
