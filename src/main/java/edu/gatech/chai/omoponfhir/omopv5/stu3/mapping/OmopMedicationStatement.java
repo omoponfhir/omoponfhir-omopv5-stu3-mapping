@@ -42,6 +42,8 @@ import org.hl7.fhir.dstu3.model.Type;
 import org.hl7.fhir.dstu3.model.ValueSet.ConceptReferenceComponent;
 import org.hl7.fhir.dstu3.model.ValueSet.ConceptSetComponent;
 import org.hl7.fhir.exceptions.FHIRException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -97,6 +99,7 @@ import edu.gatech.chai.omopv5.model.entity.VisitOccurrence;
  */
 public class OmopMedicationStatement extends BaseOmopResource<MedicationStatement, DrugExposure, DrugExposureService>
 		implements IResourceMapping<MedicationStatement, DrugExposure> {
+	private static final Logger logger = LoggerFactory.getLogger(OmopMedicationStatement.class);
 
 	private static Long MEDICATIONSTATEMENT_CONCEPT_TYPE_ID = 44787730L;
 	private static OmopMedicationStatement omopMedicationStatement = new OmopMedicationStatement();
@@ -291,6 +294,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 			try {
 				Concept unitConcept = CodeableConceptUtil.getOmopConceptWithOmopCode(conceptService, unitString);
 				if (unitConcept != null) {
+					logger.debug("unit concept found!");
 					String unitFhirUri = OmopCodeableConceptMapping
 							.fhirUriforOmopVocabulary(unitConcept.getVocabularyId());
 					if (!"None".equals(unitFhirUri)) {
@@ -301,6 +305,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 						quantity.setCode(unitCode);
 					}
 				} else {
+					logger.debug("unit concept couldn't found!");
 					quantity.setUnit(unitString);
 				}
 			} catch (FHIRException e) {
