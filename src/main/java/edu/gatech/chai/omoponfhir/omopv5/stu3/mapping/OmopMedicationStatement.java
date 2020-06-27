@@ -290,6 +290,7 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 		}
 
 		String unitString = entity.getDoseUnitSourceValue();
+		logger.debug("Unit Source Value: "+unitString);
 		if (unitString != null && !unitString.isEmpty()) {
 			try {
 				Concept unitConcept = CodeableConceptUtil.getOmopConceptWithOmopCode(conceptService, unitString);
