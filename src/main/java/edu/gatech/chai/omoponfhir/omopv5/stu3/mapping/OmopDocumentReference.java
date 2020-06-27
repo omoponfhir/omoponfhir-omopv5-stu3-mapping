@@ -182,7 +182,7 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 
 			System.out.println("TIME VALUE:"+String.valueOf(dateWithoutTime.getTime()));
 			paramWrapper.setParameterType("Date");
-			paramWrapper.setParameters(Arrays.asList("date"));
+			paramWrapper.setParameters(Arrays.asList("noteDate"));
 			paramWrapper.setOperators(Arrays.asList(inequality));
 			paramWrapper.setValues(Arrays.asList(String.valueOf(dateWithoutTime.getTime())));
 			paramWrapper.setRelationship("and");
@@ -191,7 +191,7 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 			// Time
 			ParameterWrapper paramWrapper_time = new ParameterWrapper();
 			paramWrapper_time.setParameterType("String");
-			paramWrapper_time.setParameters(Arrays.asList("time"));
+			paramWrapper_time.setParameters(Arrays.asList("noteDateTime"));
 			paramWrapper_time.setOperators(Arrays.asList(inequality));
 			paramWrapper_time.setValues(Arrays.asList(time));
 			paramWrapper_time.setRelationship("and");
@@ -217,7 +217,7 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 						if (!omopConceptId.equals(0L)) {
 							// We found the mapping. Use this to compare with concept id.
 							paramWrapper.setParameterType("Long");
-							paramWrapper.setParameters(Arrays.asList("typeConcept.id"));
+							paramWrapper.setParameters(Arrays.asList("noteTypeConcept.id"));
 							paramWrapper.setOperators(Arrays.asList("="));
 							paramWrapper.setValues(Arrays.asList(String.valueOf(omopConceptId)));
 							paramWrapper.setRelationship("and");
@@ -232,15 +232,15 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 			
 			paramWrapper.setParameterType("String");
 			if ("None".equals(omopVocabulary) && code != null && !code.isEmpty()) {
-				paramWrapper.setParameters(Arrays.asList("typeConcept.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("noteTypeConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(code));
 			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary"));
+				paramWrapper.setParameters(Arrays.asList("noteTypeConcept.vocabulary"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));				
 			} else {
-				paramWrapper.setParameters(Arrays.asList("typeConcept.vocabulary", "typeConcept.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("noteTypeConcept.vocabulary", "noteTypeConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("=","="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 			}
@@ -313,7 +313,7 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 				typeOmopConcept = typeFhirConcept;
 			}
 			
-			note.setType(typeOmopConcept);
+			note.setNoteTypeConcept(typeOmopConcept);
 		} else {
 			ThrowFHIRExceptions.unprocessableEntityException("The type codeableconcept cannot be null");
 		}
@@ -341,10 +341,11 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 		// get indexed.
 		Date indexedDate = fhirResource.getIndexed();
 		if (indexedDate != null) {
-			note.setDate(indexedDate);
+			note.setNoteDate(indexedDate);
 			
-			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-			note.setTime(timeFormat.format(indexedDate));
+//			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+//			note.setNoteDateTime(timeFormat.format(indexedDate));
+			note.setNoteDateTime(indexedDate);
 		}
 		
 		// get author.
@@ -458,9 +459,9 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 		documentReference.setStatus(DocumentReferenceStatus.CURRENT);
 
 		// type: map OMOP's Note Type concept to LOINC code if possible.
-		Concept omopTypeConcept = entity.getType();
+		Concept omopTypeConcept = entity.getNoteTypeConcept();
 		CodeableConcept typeCodeableConcept = null;
-		if ("Note Type".equals(omopTypeConcept.getVocabulary())) {
+		if ("Note Type".equals(omopTypeConcept.getVocabularyId())) {
 			Long loincConceptId = OmopNoteTypeMapping.getLoincConceptIdFor(omopTypeConcept.getId());
 			System.out.println("origin:"+omopTypeConcept.getId()+" loinc:"+loincConceptId);
 			try {
@@ -498,13 +499,16 @@ public class OmopDocumentReference extends BaseOmopResource<DocumentReference, N
 		documentReference.setSubject(patientReference);
 		
 		// Set created time
-		Date createdDate = entity.getDate();
-		String createdTime = entity.getTime();
-		Date createdDateTime = null;
+//		Date createdDate = entity.getNoteDate();
+//		String createdTime = entity.getTime();
+//		Date createdDateTime = null;
+		Date createdDate = entity.getNoteDate();
+		Date createdDateTime = entity.getNoteDateTime();;
 		if (createdDate != null) {
-			if (createdTime != null)
-				createdDateTime = DateUtil.constructDateTime(createdDate, createdTime);
-			else
+//			if (createdDateTime != null)
+//				createdDateTime = DateUtil.constructDateTime(createdDate, createdTime);
+//			else
+			if (createdDateTime == null)
 				createdDateTime = DateUtil.constructDateTime(createdDate, null);
 		}
 		

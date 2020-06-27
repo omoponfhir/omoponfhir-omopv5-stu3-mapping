@@ -24,7 +24,6 @@ import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Device;
 import org.hl7.fhir.dstu3.model.Device.DeviceUdiComponent;
 import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -36,7 +35,6 @@ import org.springframework.web.context.WebApplicationContext;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.model.MyDevice;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.DeviceResourceProvider;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
 import edu.gatech.chai.omopv5.dba.service.DeviceExposureService;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
 import edu.gatech.chai.omopv5.model.entity.Concept;
@@ -87,13 +85,13 @@ public class OmopDevice extends BaseOmopResource<Device, DeviceExposure, DeviceE
 		Concept entityConcept = entity.getDeviceConcept();
 		String systemUri = new String();
 		try {
-			systemUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(entityConcept.getVocabulary());
+			systemUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(entityConcept.getVocabularyId());
 		} catch (FHIRException e) {
 			e.printStackTrace();
 		}
 		
 		String code = entityConcept.getConceptCode();
-		String dispaly = entityConcept.getName();
+		String dispaly = entityConcept.getConceptName();
 		
 		Coding typeCoding = new Coding();
 		typeCoding.setSystem(systemUri);

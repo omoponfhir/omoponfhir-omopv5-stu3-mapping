@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.Dosage;
 import org.hl7.fhir.dstu3.model.Duration;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Identifier;
@@ -33,7 +32,6 @@ import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestDispenseReque
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.SimpleQuantity;
-import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Type;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -224,46 +222,46 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 		}
 		
 		// Dosage mapping
-		Double dose = entity.getEffectiveDrugDose();
-		SimpleQuantity doseQuantity = new SimpleQuantity();
-		if (dose != null) {
-			doseQuantity.setValue(dose);
-		}
-		
-		Concept unitConcept = entity.getDoseUnitConcept();
-		String unitUnit = null;
-		String unitCode = null;
-		String unitSystem = null;
-		if (unitConcept != null) {
-			String omopUnitVocab = unitConcept.getVocabulary();
-			String omopUnitCode = unitConcept.getConceptCode();
-			String omopUnitName = unitConcept.getName();
-			
-			String fhirUnitUri;
-			try {
-				fhirUnitUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(omopUnitVocab);
-				if ("None".equals(fhirUnitUri)) {
-//					fhirUnitUri = unitConcept.getVocabulary().getVocabularyReference();
-					fhirUnitUri = "NotAvailable";
-				}
-
-				unitUnit = omopUnitName;
-				unitCode = omopUnitCode;
-				unitSystem = fhirUnitUri; 
-			} catch (FHIRException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		if (!doseQuantity.isEmpty()) {
-			doseQuantity.setUnit(unitUnit);
-			doseQuantity.setCode(unitCode);
-			doseQuantity.setSystem(unitSystem);
-			
-			Dosage dosage = new Dosage();
-			dosage.setDose(doseQuantity);
-			medicationRequest.addDosageInstruction(dosage);
-		}
+//		Double dose = entity.getEffectiveDrugDose();
+//		SimpleQuantity doseQuantity = new SimpleQuantity();
+//		if (dose != null) {
+//			doseQuantity.setValue(dose);
+//		}
+//		
+//		Concept unitConcept = entity.getDoseUnitConcept();
+//		String unitUnit = null;
+//		String unitCode = null;
+//		String unitSystem = null;
+//		if (unitConcept != null) {
+//			String omopUnitVocab = unitConcept.getVocabulary();
+//			String omopUnitCode = unitConcept.getConceptCode();
+//			String omopUnitName = unitConcept.getName();
+//			
+//			String fhirUnitUri;
+//			try {
+//				fhirUnitUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(omopUnitVocab);
+//				if ("None".equals(fhirUnitUri)) {
+////					fhirUnitUri = unitConcept.getVocabulary().getVocabularyReference();
+//					fhirUnitUri = "NotAvailable";
+//				}
+//
+//				unitUnit = omopUnitName;
+//				unitCode = omopUnitCode;
+//				unitSystem = fhirUnitUri; 
+//			} catch (FHIRException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		if (!doseQuantity.isEmpty()) {
+//			doseQuantity.setUnit(unitUnit);
+//			doseQuantity.setCode(unitCode);
+//			doseQuantity.setSystem(unitSystem);
+//			
+//			Dosage dosage = new Dosage();
+//			dosage.setDose(doseQuantity);
+//			medicationRequest.addDosageInstruction(dosage);
+//		}
 
 		// dispense request mapping.
 		Integer refills = entity.getRefills();
@@ -272,6 +270,19 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			dispenseRequest.setNumberOfRepeatsAllowed(refills);
 		}
 
+		String unitSystem = "";
+		String unitCode = "";
+		String unitUnit = entity.getDoseUnitSourceValue();
+		if (unitUnit != null && !unitUnit.isEmpty()) {
+			Concept unitConcept = CodeableConceptUtil.getOmopConceptWithOmopCode(conceptService, unitUnit);
+			if (unitConcept != null) {
+				String vocId = unitConcept.getVocabularyId();
+				unitSystem = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(vocId);
+				unitCode = unitConcept.getConceptCode();
+				unitUnit = unitConcept.getConceptName();
+			}
+		}
+		
 		Double quantity = entity.getQuantity();
 		if (quantity != null) {
 			SimpleQuantity simpleQty = new SimpleQuantity();
@@ -287,7 +298,7 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			Duration qty = new Duration();
 			qty.setValue(daysSupply);
 			// Set the UCUM unit to day.
-			String fhirUri = OmopCodeableConceptMapping.UCUM.getFhirUri();
+			String fhirUri = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary("UCUM");
 			qty.setSystem(fhirUri);
 			qty.setCode("d");
 			qty.setUnit("day");
@@ -361,12 +372,12 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 				paramWrapper.setValues(Arrays.asList(code));
 				paramWrapper.setRelationship("or");
 			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
-				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary"));
+				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabularyId"));
 				paramWrapper.setOperators(Arrays.asList("like"));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));
 				paramWrapper.setRelationship("or");
 			} else {
-				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabulary", "drugConcept.conceptCode"));
+				paramWrapper.setParameters(Arrays.asList("drugConcept.vocabularyId", "drugConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("like","like"));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
 				paramWrapper.setRelationship("and");
@@ -668,25 +679,25 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 		}		
 
 		// dosageInstruction
-		List<Dosage> dosageInstructions = fhirResource.getDosageInstruction();
-		for (Dosage dosageInstruction: dosageInstructions) {
-			SimpleQuantity doseQty;
-			try {
-				doseQty = dosageInstruction.getDoseSimpleQuantity();
-				if (doseQty.isEmpty()) continue;
-				drugExposure.setEffectiveDrugDose(doseQty.getValue().doubleValue());
-				String doseCode = doseQty.getCode();
-				String doseSystem = doseQty.getSystem();
-				String vocabId = OmopCodeableConceptMapping.omopVocabularyforFhirUri(doseSystem);
-				Concept unitConcept = 
-						CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, vocabId, doseCode);
-				drugExposure.setDoseUnitConcept(unitConcept);
-				break;
-			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+//		List<Dosage> dosageInstructions = fhirResource.getDosageInstruction();
+//		for (Dosage dosageInstruction: dosageInstructions) {
+//			SimpleQuantity doseQty;
+//			try {
+//				doseQty = dosageInstruction.getDoseSimpleQuantity();
+//				if (doseQty.isEmpty()) continue;
+//				drugExposure.setEffectiveDrugDose(doseQty.getValue().doubleValue());
+//				String doseCode = doseQty.getCode();
+//				String doseSystem = doseQty.getSystem();
+//				String vocabId = OmopCodeableConceptMapping.omopVocabularyforFhirUri(doseSystem);
+//				Concept unitConcept = 
+//						CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, vocabId, doseCode);
+//				drugExposure.setDoseUnitConcept(unitConcept);
+//				break;
+//			} catch (FHIRException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 		
 		// dispense request 
 		MedicationRequestDispenseRequestComponent dispenseRequest = fhirResource.getDispenseRequest();
@@ -703,10 +714,14 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 				String doseSystem = qty.getSystem();
 				String vocabId;
 				try {
-					vocabId = OmopCodeableConceptMapping.omopVocabularyforFhirUri(doseSystem);
+					vocabId = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(doseSystem);
 					Concept unitConcept = 
 							CodeableConceptUtil.getOmopConceptWithOmopVacabIdAndCode(conceptService, vocabId, doseCode);
-					drugExposure.setDoseUnitConcept(unitConcept);
+					if (unitConcept != null) {
+						drugExposure.setDoseUnitSourceValue(unitConcept.getConceptCode());
+					} else {
+						drugExposure.setDoseUnitSourceValue(doseCode);
+					}
 				} catch (FHIRException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -259,10 +259,10 @@ public class ScheduledTask {
 								conceptName = omopSrc[0];
 							}
 
-							sourceConcept.setName(conceptName);
-							sourceConcept.setDomain(targetConcept.getDomain());
-							sourceConcept.setVocabulary(myVocab.getId());
-							sourceConcept.setConceptClass(targetConcept.getConceptClass());
+							sourceConcept.setConceptName(conceptName);
+							sourceConcept.setDomainId(targetConcept.getDomainId());
+							sourceConcept.setVocabularyId(myVocab.getId());
+							sourceConcept.setConceptClassId(targetConcept.getConceptClassId());
 							sourceConcept.setConceptCode(sourceCode);
 							sourceConcept.setValidStartDate(targetConcept.getValidStartDate());
 							sourceConcept.setValidEndDate(targetConcept.getValidEndDate());
@@ -452,11 +452,11 @@ public class ScheduledTask {
 	private Concept createVocabularyConcept(String name, String vocabId) {
 		Concept conceptVoc = new Concept();
 		conceptVoc.setId(getTheLargestConceptId());
-		conceptVoc.setName(name);
-		conceptVoc.setDomain("Metadata");
+		conceptVoc.setConceptName(name);
+		conceptVoc.setDomainId("Metadata");
 		
-		conceptVoc.setVocabulary(vocabId);
-		conceptVoc.setConceptClass(vocabId);
+		conceptVoc.setVocabularyId(vocabId);
+		conceptVoc.setConceptClassId(vocabId);
 		conceptVoc.setConceptCode("OMOPonFHIR generated");
 		conceptVoc.setValidStartDate(new Date(0L));
 

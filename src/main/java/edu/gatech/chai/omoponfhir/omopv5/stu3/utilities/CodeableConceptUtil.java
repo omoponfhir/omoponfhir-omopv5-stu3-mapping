@@ -32,23 +32,23 @@ import edu.gatech.chai.omopv5.model.entity.Concept;
 
 public class CodeableConceptUtil {
 	public static void addCodingFromOmopConcept(CodeableConcept codeableConcept, Concept concept) throws FHIRException {
-		String fhirUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(concept.getVocabulary());
+		String fhirUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(concept.getVocabularyId());
 		
 		Coding coding = new Coding();
 		coding.setSystem(fhirUri);
 		coding.setCode(concept.getConceptCode());
-		coding.setDisplay(concept.getName());
+		coding.setDisplay(concept.getConceptName());
 		
 		codeableConcept.addCoding(coding);
 	}
 	
 	public static Coding getCodingFromOmopConcept(Concept concept, FhirOmopVocabularyMapImpl fhirOmopVocabularyMap) throws FHIRException {
-		String fhirUri = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(concept.getVocabulary());
+		String fhirUri = fhirOmopVocabularyMap.getFhirSystemNameFromOmopVocabulary(concept.getVocabularyId());
 		
 		Coding coding = new Coding();
 		coding.setSystem(fhirUri);
 		coding.setCode(concept.getConceptCode());
-		coding.setDisplay(concept.getName());
+		coding.setDisplay(concept.getConceptName());
 
 		return coding;
 	}
@@ -66,13 +66,34 @@ public class CodeableConceptUtil {
 		addCodingFromOmopConcept (codeableConcept, concept);		
 		return codeableConcept;
 	}
-	
+
+	public static Concept getOmopConceptWithOmopCode(ConceptService conceptService, String code) {		
+		ParameterWrapper param = new ParameterWrapper(
+				"String",
+				Arrays.asList("conceptCode"),
+				Arrays.asList("="),
+				Arrays.asList(code),
+				"and"
+				);
+		
+		List<ParameterWrapper> params = new ArrayList<ParameterWrapper>();
+		params.add(param);
+
+		List<Concept> conceptIds = conceptService.searchWithParams(0, 0, params, null);
+		if (conceptIds.isEmpty()) {
+			return null;
+		}
+		
+		// We should have only one entry... so... 
+		return conceptIds.get(0);
+	}
+
 	public static Concept getOmopConceptWithOmopVacabIdAndCode(ConceptService conceptService, String omopVocabularyId, String code) {
 		if (omopVocabularyId == null) return null;
 		
 		ParameterWrapper param = new ParameterWrapper(
 				"String",
-				Arrays.asList("vocabulary", "conceptCode"),
+				Arrays.asList("vocabularyId", "conceptCode"),
 				Arrays.asList("=", "="),
 				Arrays.asList(omopVocabularyId, code),
 				"and"
@@ -115,10 +136,10 @@ public class CodeableConceptUtil {
 	 * @throws FHIRException if the {@link Concept} vocabulary cannot be mapped by the {@link OmopCodeableConceptMapping} fhirUriforOmopVocabularyi method.
      */
 	public static CodeableConcept createFromConcept(Concept concept) throws FHIRException{
-		String conceptVocab = concept.getVocabulary();
+		String conceptVocab = concept.getVocabularyId();
 		String conceptFhirUri = OmopCodeableConceptMapping.fhirUriforOmopVocabulary(conceptVocab);
 		String conceptCode = concept.getConceptCode();
-		String conceptName = concept.getName();
+		String conceptName = concept.getConceptName();
 
 		Coding conceptCoding = new Coding();
 		conceptCoding.setSystem(conceptFhirUri);

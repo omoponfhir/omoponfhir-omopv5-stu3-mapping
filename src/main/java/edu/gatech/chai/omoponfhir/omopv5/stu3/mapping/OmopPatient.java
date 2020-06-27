@@ -252,15 +252,15 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 			// WARNING check if mapping for lines are correct
 			patient.addAddress().setUse(AddressUse.HOME).addLine(fPerson.getLocation().getAddress1())
 					.addLine(fPerson.getLocation().getAddress2()).setCity(fPerson.getLocation().getCity())
-					.setPostalCode(fPerson.getLocation().getZipCode()).setState(fPerson.getLocation().getState());
+					.setPostalCode(fPerson.getLocation().getZip()).setState(fPerson.getLocation().getState());
 		}
 
 		if (fPerson.getGenderConcept() != null) {
-			String gName = fPerson.getGenderConcept().getName();
+			String gName = fPerson.getGenderConcept().getConceptName();
 			if (gName == null || gName.isEmpty()) {
 				Concept genderConcept = conceptService.findById(fPerson.getGenderConcept().getId());
 				if (genderConcept != null)
-					gName = genderConcept.getName();
+					gName = genderConcept.getConceptName();
 				else
 					gName = null;
 			}
@@ -796,7 +796,7 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 			else
 				addressZipName = "%" + ((StringParam) value).getValue() + "%";
 			paramWrapper.setParameterType("String");
-			paramWrapper.setParameters(Arrays.asList("location.zipCode"));
+			paramWrapper.setParameters(Arrays.asList("location.zip"));
 			paramWrapper.setOperators(Arrays.asList("like"));
 			paramWrapper.setValues(Arrays.asList(addressZipName));
 			paramWrapper.setRelationship("or");

@@ -87,8 +87,8 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 		if (careSite.getPlaceOfServiceConcept() != null) {
 			String codeString = careSite.getPlaceOfServiceConcept().getConceptCode();
 //			String systemUriString = careSite.getPlaceOfServiceConcept().getVocabulary().getVocabularyReference();
-			String systemUriString = vocabularyService.findById(careSite.getPlaceOfServiceConcept().getVocabulary()).getVocabularyReference();
-			String displayString = careSite.getPlaceOfServiceConcept().getName();
+			String systemUriString = vocabularyService.findById(careSite.getPlaceOfServiceConcept().getVocabularyId()).getVocabularyReference();
+			String displayString = careSite.getPlaceOfServiceConcept().getConceptName();
 
 			CodeableConcept typeCodeableConcept = new CodeableConcept()
 					.addCoding(new Coding(systemUriString, codeString, displayString));
@@ -99,7 +99,7 @@ public class OmopOrganization extends BaseOmopResource<Organization, CareSite, C
 			// WARNING check if mapping for lines are correct
 			organization.addAddress().setUse(AddressUse.HOME).addLine(careSite.getLocation().getAddress1())
 					.addLine(careSite.getLocation().getAddress2())
-					.setCity(careSite.getLocation().getCity()).setPostalCode(careSite.getLocation().getZipCode())
+					.setCity(careSite.getLocation().getCity()).setPostalCode(careSite.getLocation().getZip())
 					.setState(careSite.getLocation().getState());
 			// .setPeriod(period);
 		}

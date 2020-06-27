@@ -120,12 +120,12 @@ public class OmopPractitioner extends BaseOmopResource<Practitioner, Provider, P
 			.addLine(omopCareSite.getLocation().getAddress1())
 			.addLine(omopCareSite.getLocation().getAddress2())//WARNING check if mapping for lines are correct
 			.setCity(omopCareSite.getLocation().getCity())
-			.setPostalCode(omopCareSite.getLocation().getZipCode())
+			.setPostalCode(omopCareSite.getLocation().getZip())
 			.setState(omopCareSite.getLocation().getState());
 		}
 		//Set gender
 		if (omopProvider.getGenderConcept() != null) {
-			String gName = omopProvider.getGenderConcept().getName().toLowerCase(); 
+			String gName = omopProvider.getGenderConcept().getConceptName().toLowerCase(); 
 			AdministrativeGender gender;
 			try {
 				gender = AdministrativeGender.fromCode(gName);
@@ -208,7 +208,7 @@ public class OmopPractitioner extends BaseOmopResource<Practitioner, Provider, P
 					location.setAddress1(line1);
 					if (line2 != null)
 						location.setAddress2(line2);
-					location.setZipCode(zipCode);
+					location.setZip(zipCode);
 					location.setCity(city);
 					location.setState(state);
 				} else {
@@ -298,7 +298,7 @@ public class OmopPractitioner extends BaseOmopResource<Practitioner, Provider, P
 				genderLongCode = OmopConceptMapping.ADMIN_NULL.getOmopConceptId();
 			}
 			paramWrapper.setParameterType("Long");
-			paramWrapper.setParameters(Arrays.asList("gender_source_concept_id", "gender_source_value"));
+			paramWrapper.setParameters(Arrays.asList("genderSourceConcept", "genderSourceValue"));
 			paramWrapper.setOperators(Arrays.asList("="));
 			paramWrapper.setValues(Arrays.asList(genderLongCode.toString(),genderLongCode.toString()));
 			paramWrapper.setRelationship("or");

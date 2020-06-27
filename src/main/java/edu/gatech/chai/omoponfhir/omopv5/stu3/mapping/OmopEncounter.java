@@ -16,7 +16,6 @@
 package edu.gatech.chai.omoponfhir.omopv5.stu3.mapping;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,7 +96,7 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 		encounter.setId(new IdType(fhirId));
 
 		if (visitOccurrence.getVisitConcept() != null) {
-			String visitString = visitOccurrence.getVisitConcept().getName().toLowerCase();
+			String visitString = visitOccurrence.getVisitConcept().getConceptName().toLowerCase();
 			Coding coding = new Coding();
 			if (visitString.contains("inpatient")) {
 				coding.setSystem(V3ActCode.IMP.getSystem());
@@ -153,29 +152,42 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 		Period visitPeriod = new Period();
 		DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy/MM/dd");
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		try {
+//		try {
 			// For start Date
-			String timeString = "00:00:00";
-			if (visitOccurrence.getStartTime() != null && !visitOccurrence.getStartTime().isEmpty()) {
-				timeString = visitOccurrence.getStartTime();
-			}
-			String dateTimeString = dateOnlyFormat.format(visitOccurrence.getStartDate()) + " " + timeString;
-			Date DateTime = dateFormat.parse(dateTimeString);
-			visitPeriod.setStart(DateTime);
+//			String timeString = "00:00:00";
+//			if (visitOccurrence.getVisitStartDateTime() != null) {
+//				timeString = visitOccurrence.getStartTime();
+//			}
+//			String dateTimeString = dateOnlyFormat.format(visitOccurrence.getStartDate()) + " " + timeString;
+//			Date DateTime = dateFormat.parse(dateTimeString);
+		Date startDate = visitOccurrence.getVisitStartDate();
+		Date startDateTime = visitOccurrence.getVisitStartDateTime();
+		Date dateTime;
+		if (startDateTime != null)
+			dateTime = startDateTime;
+		else 
+			dateTime = startDate;
+		visitPeriod.setStart(dateTime);
 
 			// For end Date
-			timeString = "00:00:00";
-			if (visitOccurrence.getEndTime() != null && !visitOccurrence.getEndTime().isEmpty()) {
-				timeString = visitOccurrence.getEndTime();
-			}
-			dateTimeString = dateOnlyFormat.format(visitOccurrence.getEndDate()) + " " + timeString;
-			DateTime = dateFormat.parse(dateTimeString);
-			visitPeriod.setEnd(DateTime);
+//			timeString = "00:00:00";
+//			if (visitOccurrence.getEndTime() != null && !visitOccurrence.getEndTime().isEmpty()) {
+//				timeString = visitOccurrence.getEndTime();
+//			}
+//			dateTimeString = dateOnlyFormat.format(visitOccurrence.getEndDate()) + " " + timeString;
+//			DateTime = dateFormat.parse(dateTimeString);
+		Date endDate = visitOccurrence.getVisitEndDate();
+		Date endDateTime = visitOccurrence.getVisitEndDateTime();
+		if (endDateTime != null)
+			dateTime = endDateTime;
+		else 
+			dateTime = endDate;
+		visitPeriod.setEnd(dateTime);
 
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		} catch (ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 		encounter.setPeriod(visitPeriod);
 
@@ -313,23 +325,23 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 		}
 
 		/* Set Period */
-		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
+//		SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
 		Period tempPeriod = encounter.getPeriod();
 		if (tempPeriod != null) {
 			Date tempDate = tempPeriod.getStart();
 			if (tempDate != null) {
-				visitOccurrence.setStartDate(tempDate);
-				visitOccurrence.setStartTime(fmt.format(tempDate));
+				visitOccurrence.setVisitStartDate(tempDate);
+				visitOccurrence.setVisitStartDateTime(tempDate);
 			} else {
-				visitOccurrence.setStartDate(new Date(0));
+				visitOccurrence.setVisitStartDate(new Date(0));
 			}
 
 			tempDate = tempPeriod.getEnd();
 			if (tempDate != null) {
-				visitOccurrence.setEndDate(tempDate);
-				visitOccurrence.setEndTime(fmt.format(tempDate));
+				visitOccurrence.setVisitEndDate(tempDate);
+				visitOccurrence.setVisitEndDateTime(tempDate);
 			} else {
-				visitOccurrence.setEndDate(new Date(0));
+				visitOccurrence.setVisitEndDate(new Date(0));
 			}
 		}
 
