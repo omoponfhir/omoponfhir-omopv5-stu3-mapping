@@ -290,12 +290,10 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 		}
 
 		String unitString = entity.getDoseUnitSourceValue();
-		logger.debug("Unit Source Value: "+unitString);
 		if (unitString != null && !unitString.isEmpty()) {
 			try {
 				Concept unitConcept = CodeableConceptUtil.getOmopConceptWithOmopCode(conceptService, unitString);
 				if (unitConcept != null) {
-					logger.debug("unit concept found!");
 					String unitFhirUri = OmopCodeableConceptMapping
 							.fhirUriforOmopVocabulary(unitConcept.getVocabularyId());
 					if (!"None".equals(unitFhirUri)) {
@@ -306,7 +304,6 @@ public class OmopMedicationStatement extends BaseOmopResource<MedicationStatemen
 						quantity.setCode(unitCode);
 					}
 				} else {
-					logger.debug("unit concept couldn't found!");
 					quantity.setUnit(unitString);
 				}
 			} catch (FHIRException e) {
