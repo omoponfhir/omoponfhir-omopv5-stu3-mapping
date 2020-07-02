@@ -179,7 +179,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		String codeString = fObservationView.getObservationConcept().getConceptCode();
 		String displayString;
 		if (fObservationView.getObservationConcept().getId() == 0L) {
-			displayString = fObservationView.getSourceValue();
+			displayString = fObservationView.getObservationSourceValue();
 		} else {
 			displayString = fObservationView.getObservationConcept().getConceptName();
 		}
@@ -430,7 +430,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		System.out.println("providerTS: at "+Long.toString(providerTS)+" duration: "+Long.toString(providerTS-obsTypeTS));
 
 
-		String identifierString = fObservationView.getSourceValue();
+		String identifierString = fObservationView.getObservationSourceValue();
 		if (identifierString != null && !identifierString.isEmpty()) {
 			Identifier identifier = new Identifier();
 			identifier.setValue(identifierString);
