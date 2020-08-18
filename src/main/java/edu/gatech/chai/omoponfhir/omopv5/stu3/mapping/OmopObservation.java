@@ -2013,9 +2013,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			factRelationship.setFactId2(factId2);
 		}
 
-		factRelationship.setDomainConcept1(domainConceptId1);
+		factRelationship.setDomainConceptId1(domainConceptId1);
 		factRelationship.setFactId1(factId1);
-		factRelationship.setDomainConcept2(domainConceptId2);
+		factRelationship.setDomainConceptId2(domainConceptId2);
 		factRelationship.setRelationshipConcept(new Concept(relationshipId));
 		factRelationshipService.create(factRelationship);
 	}
