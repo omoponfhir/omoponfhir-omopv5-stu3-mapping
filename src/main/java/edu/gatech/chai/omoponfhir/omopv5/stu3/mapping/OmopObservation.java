@@ -1240,18 +1240,15 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			}
 		}
 
-		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 		if (fhirResource.getEffective() instanceof DateTimeType) {
 			Date date = ((DateTimeType) fhirResource.getEffective()).getValue();
 			measurement.setMeasurementDate(date);
 			measurement.setMeasurementDateTime(date);
-			measurement.setMeasurementTime(timeFormat.format(date));
 		} else if (fhirResource.getEffective() instanceof Period) {
 			Date startDate = ((Period) fhirResource.getEffective()).getStart();
 			if (startDate != null) {
 				measurement.setMeasurementDate(startDate);
 				measurement.setMeasurementDateTime(startDate);
-				measurement.setMeasurementTime(timeFormat.format(startDate));
 			}
 		}
 		/* Set visit occurrence */
@@ -2130,17 +2127,10 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 	private static Date createDateTime(FObservationView fObservationView) {
 		Date myDate = null;
 		if (fObservationView.getObservationDate() != null) {
-			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-			String dateString = fmt.format(fObservationView.getObservationDate());
-			fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			try {
-				if (fObservationView.getObservationTime() != null && fObservationView.getObservationTime().isEmpty() == false) {
-					myDate = fmt.parse(dateString + " " + fObservationView.getObservationTime());
-				} else {
-					myDate = fObservationView.getObservationDate();
-				}
-			} catch (ParseException e) {
-				e.printStackTrace();
+			if (fObservationView.getObservationDateTime() != null) {
+				myDate = fObservationView.getObservationDateTime();
+			} else {
+				myDate = fObservationView.getObservationDate();
 			}
 		}
 
