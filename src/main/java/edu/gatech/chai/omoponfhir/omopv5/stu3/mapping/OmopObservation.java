@@ -799,12 +799,12 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			if (systolicMeasurement != null) {
 				systolicMeasurement.setMeasurementDate(date);
 				systolicMeasurement.setMeasurementDateTime(date);
-				systolicMeasurement.setMeasurementTime(timeFormat.format(date));
+//				systolicMeasurement.setMeasurementTime(timeFormat.format(date));
 			}
 			if (diastolicMeasurement != null) {
 				diastolicMeasurement.setMeasurementDate(date);
 				diastolicMeasurement.setMeasurementDateTime(date);
-				diastolicMeasurement.setMeasurementTime(timeFormat.format(date));
+//				diastolicMeasurement.setMeasurementTime(timeFormat.format(date));
 			}
 		} else if (fhirResource.getEffective() instanceof Period) {
 			Date startDate = ((Period) fhirResource.getEffective()).getStart();
@@ -812,14 +812,14 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				if (systolicMeasurement != null) {
 					systolicMeasurement.setMeasurementDate(startDate);
 					systolicMeasurement.setMeasurementDateTime(startDate);
-					systolicMeasurement.setMeasurementTime(timeFormat.format(startDate));
+//					systolicMeasurement.setMeasurementTime(timeFormat.format(startDate));
 				}
 			}
 			if (startDate != null) {
 				if (diastolicMeasurement != null) {
 					diastolicMeasurement.setMeasurementDate(startDate);
 					diastolicMeasurement.setMeasurementDateTime(startDate);
-					diastolicMeasurement.setMeasurementTime(timeFormat.format(startDate));
+//					diastolicMeasurement.setMeasurementTime(timeFormat.format(startDate));
 				}
 			}
 		}
