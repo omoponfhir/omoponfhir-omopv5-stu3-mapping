@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
-import edu.gatech.chai.omoponfhir.omopv5.stu3.mapping.IdMapping;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.ConditionResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
@@ -33,7 +32,7 @@ import org.hl7.fhir.dstu3.model.codesystems.ConditionCategory;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
@@ -41,8 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurrence, ConditionOccurrenceService>
-		implements IResourceMapping<Condition, ConditionOccurrence> {
+public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurrence, ConditionOccurrenceService> {
 
 	private static final Logger logger = LoggerFactory.getLogger(OmopCondition.class);
 
@@ -61,18 +59,22 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 	}
 
 	public OmopCondition() {
-		super(ContextLoaderListener.getCurrentWebApplicationContext(), ConditionOccurrence.class,
+		super(ContextLoader.getCurrentWebApplicationContext(), ConditionOccurrence.class,
 				ConditionOccurrenceService.class, ConditionResourceProvider.getType());
-		initialize(ContextLoaderListener.getCurrentWebApplicationContext());
+		initialize(ContextLoader.getCurrentWebApplicationContext());
 	}
 
 	private void initialize(WebApplicationContext context) {
 		// Get bean for other services that we need for mapping.
-		conditionOccurrenceService = context.getBean(ConditionOccurrenceService.class);
-		fPersonService = context.getBean(FPersonService.class);
-		providerService = context.getBean(ProviderService.class);
-		conceptService = context.getBean(ConceptService.class);
-		visitOccurrenceService = context.getBean(VisitOccurrenceService.class);
+		if (context != null) {
+			conditionOccurrenceService = context.getBean(ConditionOccurrenceService.class);
+			fPersonService = context.getBean(FPersonService.class);
+			providerService = context.getBean(ProviderService.class);
+			conceptService = context.getBean(ConceptService.class);
+			visitOccurrenceService = context.getBean(VisitOccurrenceService.class);
+		} else {
+			logger.error("context must be NOT null");
+		}
 		
 		// Get count and put it in the counts.
 		getSize();
@@ -101,7 +103,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		// ??
 		String sourceValue = conditionOccurrence.getConditionSourceValue();
 		// ??
-		Concept sourceConceptId = conditionOccurrence.getSourceConceptId();
+		Concept sourceConceptId = conditionOccurrence.getConditionSourceConcept();
 
 		return condition;
 	}
@@ -269,7 +271,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
-		case Procedure.SP_RES_ID:
+		case Condition.SP_RES_ID:
 			String conditionId = ((TokenParam) value).getValue();
 			paramWrapper.setParameterType("Long");
 			paramWrapper.setParameters(Arrays.asList("id"));
@@ -356,7 +358,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 
 	private void addCodeToCondition(ConditionOccurrence conditionOccurrence, Condition condition) {
 		// Condition.code SNOMED-CT
-		Concept conceptId = conditionOccurrence.getConceptId();
+		Concept conceptId = conditionOccurrence.getConditionConcept();
 		if (conceptId != null) {
 			CodeableConcept conditionCodeableConcept = retrieveCodeableConcept(conceptId);
 			if (conditionCodeableConcept != null) {
@@ -367,13 +369,13 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 
 	private void addStartAndEndDateToCondition(ConditionOccurrence conditionOccurrence, Condition condition) {
 		// Condition.onsetDateTime
-		Date startDate = conditionOccurrence.getStartDate();
+		Date startDate = conditionOccurrence.getConditionStartDate();
 		if (startDate != null) {
 			DateTimeType onsetDateTime = new DateTimeType(startDate);
 			condition.setOnset(onsetDateTime);
 		}
 		// Condition.abatementDateTime
-		Date endDate = conditionOccurrence.getEndDate();
+		Date endDate = conditionOccurrence.getConditionEndDate();
 		if (endDate != null) {
 			DateTimeType abatementDateTime = new DateTimeType(endDate);
 			condition.setAbatement(abatementDateTime);
@@ -382,7 +384,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 
 	private void addTypeToCondition(ConditionOccurrence conditionOccurrence, Condition condition) {
 		// Condition.category
-		Concept typeConceptId = conditionOccurrence.getTypeConceptId();
+		Concept typeConceptId = conditionOccurrence.getConditionTypeConcept();
 		if (typeConceptId != null) {
 			String systemUri = ConditionCategory.PROBLEMLISTITEM.getSystem();
 			String code = null;
@@ -454,7 +456,6 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 				try {
 					throw new FHIRException("Could not get Person class.");
 				} catch (FHIRException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -464,7 +465,6 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			try {
 				throw new FHIRException("FHIR Resource does not contain a Subject.");
 			} catch (FHIRException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -483,7 +483,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		CodeableConcept code = fhirResource.getCode();
 		String valueSourceString = null;
 		Concept concept = fhirCode2OmopConcept(conceptService, code, valueSourceString);
-		conditionOccurrence.setConceptId(concept);
+		conditionOccurrence.setConditionConcept(concept);
 
 //		if (code != null) {
 //			List<Coding> codes = code.getCoding();
@@ -510,17 +510,17 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		// get the start and end date. We are expecting both to be of type DateTimeType
 		Type onSet = fhirResource.getOnset();
 		if (onSet != null && onSet instanceof DateTimeType) {
-			conditionOccurrence.setStartDate(((DateTimeType) fhirResource.getOnset()).toCalendar().getTime());
+			conditionOccurrence.setConditionStartDate(((DateTimeType) fhirResource.getOnset()).toCalendar().getTime());
 		} if (onSet != null && onSet instanceof Period) {
 			Period period = (Period)onSet;
 			Date start = period.getStart();
 			Date end = period.getEnd();
-			if (start != null) conditionOccurrence.setStartDate(start);
-			if (end != null) conditionOccurrence.setEndDate(end);
+			if (start != null) conditionOccurrence.setConditionStartDate(start);
+			if (end != null) conditionOccurrence.setConditionEndDate(end);
 		} 
 
 		if (fhirResource.getAbatement() != null && fhirResource.getAbatement() instanceof DateTimeType) {
-			conditionOccurrence.setEndDate(((DateTimeType) fhirResource.getAbatement()).toCalendar().getTime());
+			conditionOccurrence.setConditionEndDate(((DateTimeType) fhirResource.getAbatement()).toCalendar().getTime());
 		} else {
 			// leave alone, end date not required
 		}
@@ -549,7 +549,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		}
 
 		concept = conceptService.findById(typeConceptId);
-		conditionOccurrence.setTypeConceptId(concept);
+		conditionOccurrence.setConditionTypeConcept(concept);
 
 		// set the context
 		/* Set visit occurrence */

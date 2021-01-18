@@ -791,29 +791,29 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			}
 		}
 
-		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+//		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 		if (fhirResource.getEffective() instanceof DateTimeType) {
 			Date date = ((DateTimeType) fhirResource.getEffective()).getValue();
 			if (systolicMeasurement != null) {
 				systolicMeasurement.setMeasurementDate(date);
-				systolicMeasurement.setTime(timeFormat.format(date));
+				systolicMeasurement.setMeasurementDateTime(date);
 			}
 			if (diastolicMeasurement != null) {
 				diastolicMeasurement.setMeasurementDate(date);
-				diastolicMeasurement.setTime(timeFormat.format(date));
+				diastolicMeasurement.setMeasurementDateTime(date);
 			}
 		} else if (fhirResource.getEffective() instanceof Period) {
 			Date startDate = ((Period) fhirResource.getEffective()).getStart();
 			if (startDate != null) {
 				if (systolicMeasurement != null) {
 					systolicMeasurement.setMeasurementDate(startDate);
-					systolicMeasurement.setTime(timeFormat.format(startDate));
+					systolicMeasurement.setMeasurementDateTime(startDate);
 				}
 			}
 			if (startDate != null) {
 				if (diastolicMeasurement != null) {
 					diastolicMeasurement.setMeasurementDate(startDate);
-					diastolicMeasurement.setTime(timeFormat.format(startDate));
+					diastolicMeasurement.setMeasurementDateTime(startDate);
 				}
 			}
 		}
@@ -1095,7 +1095,7 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		}
 
 		if (concept != null)
-			measurement.setMeasurementSourceValueConcept(concept);
+			measurement.setMeasurementSourceConcept(concept);
 
 		/* Set the value of the observation */
 		Type valueType = fhirResource.getValue();
@@ -1234,16 +1234,16 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			}
 		}
 
-		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+//		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 		if (fhirResource.getEffective() instanceof DateTimeType) {
 			Date date = ((DateTimeType) fhirResource.getEffective()).getValue();
 			measurement.setMeasurementDate(date);
-			measurement.setTime(timeFormat.format(date));
+			measurement.setMeasurementDateTime(date);
 		} else if (fhirResource.getEffective() instanceof Period) {
 			Date startDate = ((Period) fhirResource.getEffective()).getStart();
 			if (startDate != null) {
 				measurement.setMeasurementDate(startDate);
-				measurement.setTime(timeFormat.format(startDate));
+				measurement.setMeasurementDateTime(startDate);
 			}
 		}
 		/* Set visit occurrence */
@@ -2013,9 +2013,9 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			factRelationship.setFactId2(factId2);
 		}
 
-		factRelationship.setDomainConcept1(domainConceptId1);
+		factRelationship.setDomainConceptId1(domainConceptId1);
 		factRelationship.setFactId1(factId1);
-		factRelationship.setDomainConcept2(domainConceptId2);
+		factRelationship.setDomainConceptId2(domainConceptId2);
 		factRelationship.setRelationshipConcept(new Concept(relationshipId));
 		factRelationshipService.create(factRelationship);
 	}

@@ -20,6 +20,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import ca.uhn.fhir.rest.param.ParamPrefixEnum;
+
 public class DateUtil {
 	public static Date constructDateTime(Date date, String time) {
 		DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -41,4 +43,24 @@ public class DateUtil {
 		
 		return dateTime;
 	}
+	
+	public static String getSqlOperator (ParamPrefixEnum apiOperator) {
+		String sqlOperator = null;
+		if (apiOperator.equals(ParamPrefixEnum.GREATERTHAN)) {
+			sqlOperator = ">";
+		} else if (apiOperator.equals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS)) {
+			sqlOperator = ">=";
+		} else if (apiOperator.equals(ParamPrefixEnum.LESSTHAN)) {
+			sqlOperator = "<";
+		} else if (apiOperator.equals(ParamPrefixEnum.LESSTHAN_OR_EQUALS)) {
+			sqlOperator = "<=";
+		} else if (apiOperator.equals(ParamPrefixEnum.NOT_EQUAL)) {
+			sqlOperator = "!=";
+		} else {
+			sqlOperator = "=";
+		}
+
+		return sqlOperator;
+	}
+
 }
