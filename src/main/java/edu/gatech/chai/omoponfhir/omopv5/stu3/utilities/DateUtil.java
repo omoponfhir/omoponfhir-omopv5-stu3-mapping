@@ -27,6 +27,8 @@ import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import edu.gatech.chai.omopv5.dba.service.ParameterWrapper;
 
+import ca.uhn.fhir.rest.param.ParamPrefixEnum;
+
 public class DateUtil {
 	public static Date constructDateTime(Date date, String time) {
 		DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy/MM/dd");
