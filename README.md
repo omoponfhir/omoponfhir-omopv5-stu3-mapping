@@ -1,3 +1,3 @@
 # omoponfhir-omopv5-stu3-mapping
 
-FHIR STU3 to OMOP v5.3
+Mapping layer for OMOP v5.2 with FHIR STU3
