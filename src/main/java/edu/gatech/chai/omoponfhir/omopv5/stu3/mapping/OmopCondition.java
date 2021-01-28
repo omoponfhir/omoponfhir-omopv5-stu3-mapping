@@ -16,10 +16,12 @@
 package edu.gatech.chai.omoponfhir.omopv5.stu3.mapping;
 
 import ca.uhn.fhir.rest.param.DateParam;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.DateUtil;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.ConditionResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.PatientResourceProvider;
@@ -161,8 +163,10 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			break;
 		case Condition.SP_ASSERTED_DATE:
 			// Condition.assertedDate -> Omop ConditionOccurrence.conditionStartDate
-			putDateInParamWrapper(paramWrapper, value, "conditionStartDate");
-			mapList.add(paramWrapper);
+			DateRangeParam dateRangeParam = ((DateRangeParam) value);
+			DateUtil.constructParameterWrapper(dateRangeParam, "conditionStartDate", paramWrapper, mapList);			
+			// putDateInParamWrapper(paramWrapper, value, "conditionStartDate");
+			// mapList.add(paramWrapper);
 			break;
 		case Condition.SP_ASSERTER:
 			// Condition.asserter -> Omop Provider
