@@ -428,6 +428,9 @@ public class OmopMedicationRequest extends BaseOmopResource<MedicationRequest, D
 			// mapList.add(paramWrapper);
 			DateRangeParam theAuthoredOnDateRangeParam = ((DateRangeParam) value);
 			DateUtil.constructParameterWrapper(theAuthoredOnDateRangeParam, "drugExposureStartDate", paramWrapper, mapList);
+			ParameterWrapper paramWrapper1 = new ParameterWrapper();
+			paramWrapper1.setUpperRelationship("or");
+			DateUtil.constructParameterWrapper(theAuthoredOnDateRangeParam, "drugExposureEndDate", paramWrapper1, mapList);
 			break;
 //		case MedicationRequest.SP_PATIENT:
 //		case MedicationRequest.SP_SUBJECT:
