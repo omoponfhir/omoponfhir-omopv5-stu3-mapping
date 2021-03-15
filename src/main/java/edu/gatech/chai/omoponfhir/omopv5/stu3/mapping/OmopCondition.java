@@ -164,6 +164,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		case Condition.SP_ASSERTED_DATE:
 			// Condition.assertedDate -> Omop ConditionOccurrence.conditionStartDate
 			DateRangeParam dateRangeParam = ((DateRangeParam) value);
+			paramWrapper.setUpperRelationship("or"); // or these two maps
 			DateUtil.constructParameterWrapper(dateRangeParam, "conditionStartDate", paramWrapper, mapList);	
 			ParameterWrapper paramWrapper1 = new ParameterWrapper();
 			paramWrapper1.setUpperRelationship("or");
@@ -424,7 +425,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 		Provider provider = conditionOccurrence.getProvider();
 		if (provider != null) {
 			Reference providerRef = new Reference(new IdType(PractitionerResourceProvider.getType(), provider.getId()));
-			providerRef.setDisplay(provider.getProviderName());
+//			providerRef.setDisplay(provider.getProviderName());
 			condition.setAsserter(providerRef);
 		}
 	}

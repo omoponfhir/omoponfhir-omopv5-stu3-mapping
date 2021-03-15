@@ -276,6 +276,7 @@ public class OmopEncounter extends BaseOmopResource<Encounter, VisitOccurrence, 
 			break;
 		case Encounter.SP_DATE:
 			DateRangeParam dateRangeParam = ((DateRangeParam) value);
+			paramWrapper.setUpperRelationship("or"); // or these two maps
 			DateUtil.constructParameterWrapper(dateRangeParam, "visitStartDate", paramWrapper, mapList);
 			ParameterWrapper paramWrapper1 = new ParameterWrapper();
 			paramWrapper1.setUpperRelationship("or");

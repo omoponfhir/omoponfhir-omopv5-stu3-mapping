@@ -48,11 +48,13 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
 import ca.uhn.fhir.rest.param.DateParam;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.param.TokenParamModifier;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.CodeableConceptUtil;
+import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.DateUtil;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.utilities.TerminologyServiceClient;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.EncounterResourceProvider;
 import edu.gatech.chai.omoponfhir.omopv5.stu3.provider.MedicationRequestResourceProvider;
