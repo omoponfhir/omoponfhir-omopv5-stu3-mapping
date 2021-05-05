@@ -162,15 +162,7 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			// not supporting
 			break;
 		case Condition.SP_ASSERTED_DATE:
-			// Condition.assertedDate -> Omop ConditionOccurrence.conditionStartDate
-			DateRangeParam dateRangeParam = ((DateRangeParam) value);
-			paramWrapper.setUpperRelationship("or"); // or these two maps
-			DateUtil.constructParameterWrapper(dateRangeParam, "conditionStartDate", paramWrapper, mapList);	
-			ParameterWrapper paramWrapper1 = new ParameterWrapper();
-			paramWrapper1.setUpperRelationship("or");
-			DateUtil.constructParameterWrapper(dateRangeParam, "conditionEndDate", paramWrapper1, mapList);	
-			// putDateInParamWrapper(paramWrapper, value, "conditionStartDate");
-			// mapList.add(paramWrapper);
+			// not supporting
 			break;
 		case Condition.SP_ASSERTER:
 			// Condition.asserter -> Omop Provider
@@ -201,21 +193,22 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			if ((system == null || system.isEmpty()) && (code == null || code.isEmpty()))
 				break;
 
-			String omopVocabulary = "None";
+			String omopVocabulary = null;
 			if (system != null && !system.isEmpty()) {
 				try {
-					omopVocabulary = OmopCodeableConceptMapping.omopVocabularyforFhirUri(system);
+//					omopVocabulary = OmopCodeableConceptMapping.omopVocabularyforFhirUri(system);
+					omopVocabulary = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(system);
 				} catch (FHIRException e) {
 					e.printStackTrace();
 				}
 			}
 
 			paramWrapper.setParameterType("String");
-			if ("None".equals(omopVocabulary) && code != null && !code.isEmpty()) {
+			if (omopVocabulary == null && code != null && !code.isEmpty()) {
 				paramWrapper.setParameters(Arrays.asList("conditionConcept.conceptCode"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(code));
-			} else if (!"None".equals(omopVocabulary) && (code == null || code.isEmpty())) {
+			} else if (omopVocabulary != null && (code == null || code.isEmpty())) {
 				paramWrapper.setParameters(Arrays.asList("conditionConcept.vocabulary"));
 				paramWrapper.setOperators(Arrays.asList("="));
 				paramWrapper.setValues(Arrays.asList(omopVocabulary));
@@ -259,7 +252,15 @@ public class OmopCondition extends BaseOmopResource<Condition, ConditionOccurren
 			// not supporting
 			break;
 		case Condition.SP_ONSET_DATE:
-			// not supporting
+			// Condition.assertedDate -> Omop ConditionOccurrence.conditionStartDate
+			DateRangeParam dateRangeParam = ((DateRangeParam) value);
+			paramWrapper.setUpperRelationship("or"); // or these two maps
+			DateUtil.constructParameterWrapper(dateRangeParam, "conditionStartDate", paramWrapper, mapList);	
+			ParameterWrapper paramWrapper1 = new ParameterWrapper();
+			paramWrapper1.setUpperRelationship("or");
+			DateUtil.constructParameterWrapper(dateRangeParam, "conditionEndDate", paramWrapper1, mapList);	
+			// putDateInParamWrapper(paramWrapper, value, "conditionStartDate");
+			// mapList.add(paramWrapper);
 			break;
 		case Condition.SP_ONSET_INFO:
 			// not supporting

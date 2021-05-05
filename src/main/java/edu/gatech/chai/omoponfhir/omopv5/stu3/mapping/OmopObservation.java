@@ -1762,7 +1762,8 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				DateParam dateParam = new DateParam();
 				dateParam.setPrefix(ParamPrefixEnum.EQUAL);
 				dateParam.setValue(date);
-				paramList.addAll(mapParameter(Observation.SP_DATE, dateParam, false));
+				DateRangeParam dateRangeParam = new DateRangeParam(dateParam);
+				paramList.addAll(mapParameter(Observation.SP_DATE, dateRangeParam, false));
 
 				if (concept == null) {
 					ParameterWrapper pw = new ParameterWrapper();
