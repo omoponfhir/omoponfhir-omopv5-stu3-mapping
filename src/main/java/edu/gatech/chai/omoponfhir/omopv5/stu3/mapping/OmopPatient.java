@@ -757,7 +757,7 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 				addressName = "%" + ((StringParam) value).getValue() + "%";
 			paramWrapper.setParameterType("String");
 			paramWrapper.setParameters(Arrays.asList("location.address1", "location.address2", "location.city",
-					"location.state", "location.zipCode"));
+					"location.state", "location.zip"));
 			paramWrapper.setOperators(Arrays.asList("like", "like", "like", "like", "like"));
 			paramWrapper.setValues(Arrays.asList(addressName));
 			paramWrapper.setRelationship("or");
